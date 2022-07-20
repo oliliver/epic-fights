@@ -3,6 +3,7 @@ import cloneDeep from 'lodash/fp/cloneDeep'
 import constants from '../constants'
 import { FighterData, GridPosition } from './types'
 import Tile from './Tile'
+import { nanoid } from 'nanoid'
 
 export const fighterData = {
   1: {
@@ -38,6 +39,7 @@ export const fighterData = {
 }
 
 export default class Fighter {
+  public id: string
   public healthPoints: number
   public attackPoints: number
   public defensePoints: number
@@ -59,6 +61,7 @@ export default class Fighter {
     this.tier = initialData.tier
     this.abilities = cloneDeep(initialData.abilities ?? {})
     this.position = cloneDeep(initialData.position)
+    this.id = nanoid()
   }
 
   /**
