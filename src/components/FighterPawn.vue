@@ -1,6 +1,6 @@
 <template>
-  <button class="rounded-full h-1/2 w-1/2 m-auto flex flex-col items-center justify-center cursor-pointer"
-    :class="store.selectedPawnId == fighter.id ? 'bg-green-400' : 'bg-gray-100'" @click="selectPawn">
+  <button class="rounded-full h-1/2 w-1/2 m-auto flex flex-col items-center justify-center cursor-pointer shadow-md"
+    :class="store.selectedPawnId == fighter.id ? 'bg-green-400' : 'bg-gray-200'" @click="selectPawn">
     <strong>
       {{ fighter.tier }}
     </strong>

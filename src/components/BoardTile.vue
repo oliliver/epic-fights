@@ -5,7 +5,7 @@
   ]" :key="tile.id">
     <FighterPawn v-if="fightersOnTiles[tile.id]" :fighter="fightersOnTiles[tile.id]" :tile="tile"
       class="relative z-10" />
-    <div v-else-if="store.selectedPawnId && tileIsInRange"
+    <div v-else-if="store.selectedPawnId && tileIsInRange && tileIsAccessable" @click="movePawn"
       class="absolute inset-0 flex transition-opacity bg-emerald-200 cursor-pointer">
       <div class="h-1/2 w-1/2 m-auto opacity-0 group-hover:opacity-100 rounded-full bg-emerald-300" />
     </div>
@@ -43,4 +43,12 @@ const tileIsInRange = computed(() => {
 
   return (Math.abs(selectedTile.row - props.tile.row) + Math.abs(selectedTile.col - props.tile.col)) <= (store.selectedPawn?.fighter.movementPoints ?? 0)
 })
+
+const tileIsAccessable = computed(() => {
+  return !props.tile.belongsToOtherPlayer()
+})
+
+function movePawn() {
+  store.movePawn(props.tile)
+}
 </script>

@@ -99,6 +99,18 @@ export const useStore = defineStore('main', {
 
       // this.reachablePositions = positionsMatrix.flat().filter(p => p.isReachable).reduce((acc: GroupedPositionBoolean, pos) => ({ ...acc, [pos.col]: { ...acc[pos.col], [pos.row]: true } }), {})
     },
+    deselectPawn() {
+      this.selectedPawn = null
+    },
+    movePawn(targetTile: Tile) {
+      const targetFighter = this.selectedPawn?.fighter
+      const { col, row } = targetTile
+
+      if (!targetFighter) return
+
+      [targetFighter.position.col, targetFighter.position.row] = [col, row]
+      this.deselectPawn()
+    }
   },
   getters: {
     fightersOnTiles: state => {
