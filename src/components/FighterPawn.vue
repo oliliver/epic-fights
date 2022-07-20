@@ -1,6 +1,8 @@
 <template>
-  <button class="rounded-full h-1/2 w-1/2 m-auto flex flex-col items-center justify-center cursor-pointer shadow-md"
-    :class="store.selectedPawnId == fighter.id ? 'bg-green-400' : 'bg-gray-200'" @click="selectPawn">
+  <button
+    class="rounded-full h-3/5 w-3/5 m-auto flex flex-col items-center justify-center cursor-pointer shadow-md border-4"
+    :class="store.selectedPawnId == fighter.id ? 'bg-green-400' : 'bg-gray-200', constants.colors.border[fighter.player.color]"
+    @click="selectPawn">
     <strong>
       {{ fighter.tier }}
     </strong>
@@ -11,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+import constants from '../constants';
 import Fighter from '../models/Fighter';
 import Tile from '../models/Tile';
 import { useStore } from "../store";
