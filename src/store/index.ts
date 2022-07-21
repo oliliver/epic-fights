@@ -2,17 +2,16 @@ import Player from '../models/Player'
 import Tile from '../models/Tile'
 import constants from '../constants'
 import { defineStore } from 'pinia'
-import { GroupedPositionBoolean, MainStoreData } from './types'
+import { MainStoreData } from './types'
 import Fighter from '../models/Fighter'
-import { getFighterOnTile } from './helpers'
-import { GridPosition } from '../models/types'
+import { getFighterOnTile, getOrthogonallyDiagonalTiles, isWithinGrid, isWithinRangeOrthogonally } from './helpers'
 
 export const useStore = defineStore('main', {
   state(): MainStoreData {
     return {
       selectedPawn: null,
       tiles: [],
-      reachablePositions: {},
+      reachableTiles: [],
       players: [],
     }
   },
@@ -27,6 +26,8 @@ export const useStore = defineStore('main', {
           this.tiles.push(new Tile(tileId++, row, col))
         }
       }
+
+      Object.freeze(this.tiles)
 
       const player1 = new Player({
         tiles: this.tiles.filter(tile => !tile.isCornerTile && tile.isInFirstRow),
@@ -55,49 +56,31 @@ export const useStore = defineStore('main', {
         tile,
       }
 
-      // const { GRID_HEIGHT: rowMax, GRID_WIDTH: colMax } = constants
-      // const [rowMin, colMin] = [1, 1]
+      const allReachableTiles = []
+      let edgeTiles = [tile]
 
-      // type reachableTiles = {
-      //   col: number,
-      //   row: number,
-      //   isReachable: boolean
-      // }
+      for (let i = 0; i < fighter.movementPoints; i++) {
+        const newEdgeTiles: Tile[] = []
 
-      /* 
-        THIS IS APPROPRIATE WHEN THERE IS NEED TO CALCULATE BLOCKED PATHS:
-      */
+        edgeTiles.forEach(edgeTile => {
+          const orthogonallyDiagonalTiles = getOrthogonallyDiagonalTiles(edgeTile)
 
-      // const positionsMatrix = Array.from({ length: rowMax + 1 }).map((_, row) => Array.from({ length: colMax + 1 }).map((_, col) => ({ row, col, isReachable: false })))
+          const reachableTiles = orthogonallyDiagonalTiles.filter(tile =>
+            isWithinGrid(tile) &&
+            isWithinRangeOrthogonally(tile, edgeTile, 1) &&
+            !edgeTiles.includes(tile) &&
+            !tile.isOccupied() &&
+            (!tile.isEdgeTile || fighter.startingTile.id == tile.id)
+          )
 
-      // let edgeTiles = [positionsMatrix[tile.row][tile.col]]
+          newEdgeTiles.push(...reachableTiles)
+        })
 
-      // for (let i = 0; i < fighter.movementPoints; i++) {
-      //   const newEdgeTiles: reachableTiles[] = []
+        allReachableTiles.push(...newEdgeTiles)
+        edgeTiles = newEdgeTiles
+      }
 
-      //   const col = (n: number) => Math.max(colMin, Math.min(n, colMax))
-      //   const row = (n: number) => Math.max(rowMin, Math.min(n, rowMax))
-
-      //   edgeTiles.forEach(p => {
-      //     const reachableTiles = [...new Set([
-      //       positionsMatrix[col(p.row + 1)][row(p.col + 0)],
-      //       positionsMatrix[col(p.row - 1)][row(p.col + 0)],
-      //       positionsMatrix[col(p.row + 0)][row(p.col + 1)],
-      //       positionsMatrix[col(p.row + 0)][row(p.col - 1)],
-      //     ])]
-
-      //     reachableTiles.forEach(tile => {
-      //       if (!tile.isReachable) {
-      //         tile.isReachable = true
-      //         newEdgeTiles.push(tile)
-      //       }
-      //     })
-      //   })
-
-      //   edgeTiles = newEdgeTiles
-      // }
-
-      // this.reachablePositions = positionsMatrix.flat().filter(p => p.isReachable).reduce((acc: GroupedPositionBoolean, pos) => ({ ...acc, [pos.col]: { ...acc[pos.col], [pos.row]: true } }), {})
+      this.reachableTiles = [...new Set(allReachableTiles)]
     },
     deselectPawn() {
       this.selectedPawn = null

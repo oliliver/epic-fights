@@ -14,11 +14,12 @@ export type MainStoreData = {
     tile: Tile
   } | null
   tiles: Tile[]
-  reachablePositions: {
-    [col: number | string]: {
-      min: number,
-      max: number
-    }
-  }
+  reachableTiles: Tile[]
+  // reachablePositions: {
+  //   [col: number | string]: {
+  //     min: number,
+  //     max: number
+  //   }
+  // }
   players: Player[]
 }

@@ -4,7 +4,7 @@
   ]" :key="tile.id">
     <div v-if="!tile.isCornerTile" class="flex flex-col h-full w-full">
       <FighterPawn v-if="fighterOnThisTile" :fighter="fighterOnThisTile" :tile="tile" class="relative z-10" />
-      <div v-else-if="store.selectedPawnId && tileIsInRange && tileIsAccessable" @click="movePawn"
+      <div v-else-if="store.selectedPawnId && tileIsInRange" @click="movePawn"
         class="absolute inset-0 flex transition-opacity bg-emerald-200 cursor-pointer">
         <div class="h-1/2 w-1/2 m-auto opacity-0 group-hover:opacity-100 rounded-full bg-emerald-300" />
       </div>
@@ -44,17 +44,16 @@ function getBackgroundColor(index: number) {
 }
 
 const tileIsInRange = computed(() => {
-  const selectedTile = store.selectedPawn?.tile
+  /*
+    BASIC CHECK, can be used as placeholder while path is being tracked/loaded
+  */
+  // const selectedTile = store.selectedPawn?.tile
 
-  if (!selectedTile) return false
+  // if (!selectedTile) return false
 
-  return (Math.abs(selectedTile.row - props.tile.row) + Math.abs(selectedTile.col - props.tile.col)) <= (store.selectedPawn?.fighter.movementPoints ?? 0)
-})
+  // return (Math.abs(selectedTile.row - props.tile.row) + Math.abs(selectedTile.col - props.tile.col)) <= (store.selectedPawn?.fighter.movementPoints ?? 0)
 
-const tileIsAccessable = computed(() => {
-  const selectedFighter = store.selectedPawn?.fighter
-
-  return !props.tile.isOccupied() && (!props.tile.isEdgeTile || props.tile.id == selectedFighter?.startingTile.id)
+  return store.reachableTiles.some(tile => tile.id == props.tile.id)
 })
 
 function movePawn() {
