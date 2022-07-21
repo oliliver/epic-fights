@@ -1,9 +1,9 @@
+import constants from '../constants'
+import Fighter from '../models/Fighter'
 import Player from '../models/Player'
 import Tile from '../models/Tile'
-import constants from '../constants'
 import { defineStore } from 'pinia'
 import { MainStoreData } from './types'
-import Fighter from '../models/Fighter'
 import { getFighterOnTile, getOrthogonallyDiagonalTiles, isWithinGrid, isWithinRangeOrthogonally } from './helpers'
 
 export const useStore = defineStore('main', {
@@ -62,7 +62,7 @@ export const useStore = defineStore('main', {
       for (let i = 0; i < fighter.movementPoints; i++) {
         const newEdgeTiles: Tile[] = []
 
-        edgeTiles.forEach(edgeTile => {
+        edgeTiles.forEach((edgeTile, i2) => {
           const orthogonallyDiagonalTiles = getOrthogonallyDiagonalTiles(edgeTile)
 
           const reachableTiles = orthogonallyDiagonalTiles.filter(tile =>
@@ -84,6 +84,7 @@ export const useStore = defineStore('main', {
     },
     deselectPawn() {
       this.selectedPawn = null
+      this.reachableTiles = []
     },
     movePawn(targetTile: Tile) {
       const targetFighter = this.selectedPawn?.fighter

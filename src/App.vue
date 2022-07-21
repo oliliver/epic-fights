@@ -17,7 +17,10 @@
         gridTemplateColumns: `repeat(${constants.GRID_WIDTH}, 1fr)`,
         gridTemplateRows: `repeat(${constants.GRID_HEIGHT}, 1fr)`
       }">
-      <BoardTile v-for="tile in store.tiles" :tile="tile" />
+      <ReachableTileOverlay v-for="tile in store.reachableTiles" :tile="tile"
+        :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
+      <BoardTile v-for="tile in store.tiles" :tile="tile"
+        :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
     </div>
   </div>
   <label for="animate"
@@ -35,6 +38,7 @@ import { useStore } from './store'
 import constants from "./constants";
 import BoardTile from './components/BoardTile.vue'
 import FighterInfo from './components/FighterInfo.vue'
+import ReachableTileOverlay from './components/ReachableTileOverlay.vue';
 
 const animate = useStorage('animate', true)
 let isMounted = ref(false)

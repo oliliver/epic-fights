@@ -1,12 +1,12 @@
 import constants from "../constants"
-import Player from "../models/Player"
 import Tile from "../models/Tile"
+import { PlayerClass } from "../models/Player"
 import { GridPosition } from "../models/types"
 import { useStore } from '.'
 
 const { GRID_HEIGHT, GRID_WIDTH } = constants
 
-export function getFighterOnTile(players: Player[], tile: Tile) {
+export function getFighterOnTile(players: PlayerClass[], tile: Tile) {
   let fighter = undefined
   let playerIndex = 0
 

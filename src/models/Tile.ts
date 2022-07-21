@@ -4,17 +4,19 @@ import { useStore } from "../store";
 const { GRID_HEIGHT, GRID_WIDTH } = constants
 
 export default class Tile {
-  public col: number
-  public id: number
-  public isCornerTile: boolean
-  public isEdgeTile: boolean
-  public isInFirstCol: boolean
-  public isInFirstRow: boolean
-  public isInLastCol: boolean
-  public isInLastRow: boolean
-  public row: number
+  readonly col: number
+  readonly id: number
+  readonly isCornerTile: boolean
+  readonly isEdgeTile: boolean
+  readonly isInFirstCol: boolean
+  readonly isInFirstRow: boolean
+  readonly isInLastCol: boolean
+  readonly isInLastRow: boolean
+  readonly row: number
 
   readonly isOccupied: () => boolean
+
+  public classes: string[] = []
 
   constructor(id: number, row: number, col: number) {
     this.isOccupied = () => {
@@ -33,6 +35,12 @@ export default class Tile {
     this.isEdgeTile = this.isInFirstCol || this.isInFirstRow || this.isInLastCol || this.isInLastRow
     this.row = row
 
-    Object.freeze(this)
+    if (this.isCornerTile) {
+      this.classes = ['bg-transparent']
+    } else if (!this.isEdgeTile) {
+      this.classes = ['bg-gray-200']
+    }
+
+    Object.seal(this)
   }
 }

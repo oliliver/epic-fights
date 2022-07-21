@@ -26,6 +26,10 @@ const props = defineProps<{
 const store = useStore()
 
 function selectPawn() {
-  store.selectPawn(props.fighter, props.tile)
+  if (store.selectedPawnId == props.fighter.id) {
+    store.deselectPawn()
+  } else {
+    store.selectPawn(props.fighter, props.tile)
+  }
 }
 </script>

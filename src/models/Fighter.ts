@@ -1,7 +1,7 @@
 import Ability from './Ability'
 import constants from '../constants'
 import Tile from './Tile'
-import Player from './Player'
+import { PlayerClass } from './Player'
 import { FighterData, GridPosition } from './types'
 import { nanoid } from 'nanoid'
 
@@ -45,7 +45,7 @@ export default class Fighter {
   public healthPoints: number
   public id: string
   public movementPoints: number
-  public player: Player
+  public player: PlayerClass
   public position: GridPosition
   public tier: number
 
@@ -53,7 +53,7 @@ export default class Fighter {
 
   constructor(initialData: FighterData & {
     startingTile: Tile
-    player: Player
+    player: PlayerClass
   }) {
     this.abilities = initialData.abilities ?? {}
     this.attackPoints = initialData.attackPoints
@@ -78,7 +78,7 @@ export default class Fighter {
 }
 
 export class Fighter1 extends Fighter {
-  constructor(args: { startingTile: Tile, player: Player }) {
+  constructor(args: { startingTile: Tile, player: PlayerClass }) {
     const { startingTile, player } = args
 
     super(
@@ -92,7 +92,7 @@ export class Fighter1 extends Fighter {
 }
 
 export class Fighter2 extends Fighter {
-  constructor(args: { startingTile: Tile, player: Player }) {
+  constructor(args: { startingTile: Tile, player: PlayerClass }) {
     const { startingTile, player } = args
 
     super(
@@ -106,7 +106,7 @@ export class Fighter2 extends Fighter {
 }
 
 export class Fighter3 extends Fighter {
-  constructor(args: { startingTile: Tile, player: Player }) {
+  constructor(args: { startingTile: Tile, player: PlayerClass }) {
     const { startingTile, player } = args
 
     super(
@@ -120,7 +120,7 @@ export class Fighter3 extends Fighter {
 }
 
 export class Fighter4 extends Fighter {
-  constructor(args: { startingTile: Tile, player: Player }) {
+  constructor(args: { startingTile: Tile, player: PlayerClass }) {
     const { startingTile, player } = args
 
     super(

@@ -14,3 +14,5 @@ export type FighterData = {
     [name: string]: Ability
   }
 }
+
+export type Public<T> = { [P in keyof T]: T[P] }
