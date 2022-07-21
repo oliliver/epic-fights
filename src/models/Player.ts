@@ -15,10 +15,10 @@ export default class Player {
     this.tiles = initialData.tiles
 
     this.fighters = [
-      new Fighter1({ position: { row: this.tiles[0].row, col: this.tiles[0].col }, player: this }),
-      new Fighter2({ position: { row: this.tiles[1].row, col: this.tiles[1].col }, player: this }),
-      new Fighter3({ position: { row: this.tiles[2].row, col: this.tiles[2].col }, player: this }),
-      new Fighter4({ position: { row: this.tiles[3].row, col: this.tiles[3].col }, player: this }),
+      new Fighter1({ startingTile: this.tiles[0], player: this }),
+      new Fighter2({ startingTile: this.tiles[1], player: this }),
+      new Fighter3({ startingTile: this.tiles[2], player: this }),
+      new Fighter4({ startingTile: this.tiles[3], player: this }),
     ]
   }
 }

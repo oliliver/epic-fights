@@ -1,10 +1,9 @@
 import Ability from './Ability'
-import cloneDeep from 'lodash/fp/cloneDeep'
 import constants from '../constants'
-import { FighterData, GridPosition } from './types'
 import Tile from './Tile'
-import { nanoid } from 'nanoid'
 import Player from './Player'
+import { FighterData, GridPosition } from './types'
+import { nanoid } from 'nanoid'
 
 export const fighterData = {
   1: {
@@ -50,19 +49,21 @@ export default class Fighter {
   public position: GridPosition
   public tier: number
 
+  readonly startingTile: Tile
 
   constructor(initialData: FighterData & {
-    position: GridPosition
+    startingTile: Tile
     player: Player
   }) {
-    this.abilities = cloneDeep(initialData.abilities ?? {})
+    this.abilities = initialData.abilities ?? {}
     this.attackPoints = initialData.attackPoints
     this.defensePoints = initialData.defensePoints
     this.healthPoints = constants.DEFAULT_HP
     this.id = nanoid()
     this.movementPoints = initialData.movementPoints
     this.player = initialData.player
-    this.position = cloneDeep(initialData.position)
+    this.position = { row: initialData.startingTile.row, col: initialData.startingTile.col }
+    this.startingTile = initialData.startingTile
     this.tier = initialData.tier
   }
 
@@ -77,13 +78,13 @@ export default class Fighter {
 }
 
 export class Fighter1 extends Fighter {
-  constructor(args: { position: GridPosition, player: Player }) {
-    const { position, player } = args
+  constructor(args: { startingTile: Tile, player: Player }) {
+    const { startingTile, player } = args
 
     super(
       {
         ...fighterData[1],
-        position,
+        startingTile,
         player,
       }
     )
@@ -91,13 +92,13 @@ export class Fighter1 extends Fighter {
 }
 
 export class Fighter2 extends Fighter {
-  constructor(args: { position: GridPosition, player: Player }) {
-    const { position, player } = args
+  constructor(args: { startingTile: Tile, player: Player }) {
+    const { startingTile, player } = args
 
     super(
       {
         ...fighterData[2],
-        position,
+        startingTile,
         player,
       }
     )
@@ -105,13 +106,13 @@ export class Fighter2 extends Fighter {
 }
 
 export class Fighter3 extends Fighter {
-  constructor(args: { position: GridPosition, player: Player }) {
-    const { position, player } = args
+  constructor(args: { startingTile: Tile, player: Player }) {
+    const { startingTile, player } = args
 
     super(
       {
         ...fighterData[3],
-        position,
+        startingTile,
         player,
       }
     )
@@ -119,13 +120,13 @@ export class Fighter3 extends Fighter {
 }
 
 export class Fighter4 extends Fighter {
-  constructor(args: { position: GridPosition, player: Player }) {
-    const { position, player } = args
+  constructor(args: { startingTile: Tile, player: Player }) {
+    const { startingTile, player } = args
 
     super(
       {
         ...fighterData[4],
-        position,
+        startingTile,
         player,
       }
     )

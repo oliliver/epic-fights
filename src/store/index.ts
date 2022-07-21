@@ -114,9 +114,9 @@ export const useStore = defineStore('main', {
   },
   getters: {
     fightersOnTiles: state => {
-      return state.tiles.reduce((acc: { [index: number]: Fighter | undefined }, tile) => ({
+      return state.tiles.reduce((acc: { [index: string | number]: Fighter | undefined }, tile) => ({
         ...acc,
-        [tile.id]: getFighterOnTile(state.players, tile)
+        [String(tile.id)]: getFighterOnTile(state.players, tile)
       }), {})
     },
     selectedPawnId: state => state.selectedPawn?.fighter.id,
