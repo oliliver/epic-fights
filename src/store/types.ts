@@ -1,6 +1,7 @@
 import Fighter from "../models/Fighter"
-import { PlayerClass } from "../models/Player"
 import Tile from "../models/Tile"
+import { PlayerClass } from "../models/Player"
+import { ReachableTile } from "../models/types"
 
 export type GroupedPositionBoolean = {
   [col: string]: {
@@ -14,6 +15,6 @@ export type MainStoreData = {
     tile: Tile
   } | null
   tiles: Tile[]
-  reachableTiles: Tile[]
+  reachableTiles: ReachableTile[]
   players: PlayerClass[]
 }

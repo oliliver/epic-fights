@@ -5,6 +5,8 @@ import Tile from '../models/Tile'
 import { defineStore } from 'pinia'
 import { MainStoreData } from './types'
 import { getFighterOnTile, getOrthogonallyDiagonalTiles, isWithinGrid, isWithinRangeOrthogonally } from './helpers'
+import { ReachableTile } from '../models/types'
+import { uniqBy } from 'lodash'
 
 export const useStore = defineStore('main', {
   state(): MainStoreData {
@@ -62,16 +64,16 @@ export const useStore = defineStore('main', {
       for (let i = 0; i < fighter.movementPoints; i++) {
         const newEdgeTiles: Tile[] = []
 
-        edgeTiles.forEach((edgeTile, i2) => {
+        edgeTiles.forEach(edgeTile => {
           const orthogonallyDiagonalTiles = getOrthogonallyDiagonalTiles(edgeTile)
 
           const reachableTiles = orthogonallyDiagonalTiles.filter(tile =>
             isWithinGrid(tile) &&
             isWithinRangeOrthogonally(tile, edgeTile, 1) &&
-            !edgeTiles.includes(tile) &&
+            !edgeTiles.some(t => t.id == tile.id) &&
             !tile.isOccupied() &&
             (!tile.isEdgeTile || fighter.startingTile.id == tile.id)
-          )
+          ).map(t => ({ ...t, numberOfStepsAway: i + 1 }))
 
           newEdgeTiles.push(...reachableTiles)
         })
@@ -80,7 +82,7 @@ export const useStore = defineStore('main', {
         edgeTiles = newEdgeTiles
       }
 
-      this.reachableTiles = [...new Set(allReachableTiles)]
+      this.reachableTiles = uniqBy(allReachableTiles, 'id')
     },
     deselectPawn() {
       this.selectedPawn = null

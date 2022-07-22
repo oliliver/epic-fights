@@ -1,4 +1,5 @@
 import Ability from "../models/Ability";
+import Tile from "./Tile";
 
 /** starting on 1 / 1 */
 export type GridPosition = { row: number, col: number }
@@ -16,3 +17,5 @@ export type FighterData = {
 }
 
 export type Public<T> = { [P in keyof T]: T[P] }
+
+export type ReachableTile = (Tile & { numberOfStepsAway?: number })

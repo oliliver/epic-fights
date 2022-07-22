@@ -1,22 +1,25 @@
 <template>
-  <div class="bg-gray-200 p-8">
-    <p>
-      {{ fighter.tier }}.
-    </p>
+  <div class="bg-gray-200 flex items-center justify-center xl:justify-start xl:pl-6 text-xs xl:text-base">
+    <div>
 
-    <div class="pl-6">
-      <p class="flex justify-between">
-        <span>HP:</span> <span>{{ constants.DEFAULT_HP }}</span>
+      <p>
+        {{ fighter.tier }}.
       </p>
-      <p class="flex justify-between">
-        <span>Movement:</span> <span>{{ fighter.movementPoints }}</span>
-      </p>
-      <p class="flex justify-between">
-        <span>Attack:</span> <span>{{ fighter.attackPoints }}</span>
-      </p>
-      <p class="flex justify-between">
-        <span>Defense:</span> <span>{{ fighter.defensePoints }}</span>
-      </p>
+
+      <div class="pl-6">
+        <p class="flex justify-between">
+          <span>HP:</span> <span>{{ constants.DEFAULT_HP }}</span>
+        </p>
+        <p class="flex justify-between">
+          <span>Movement:</span> <span>{{ fighter.movementPoints }}</span>
+        </p>
+        <p class="flex justify-between">
+          <span>Attack:</span> <span>{{ fighter.attackPoints }}</span>
+        </p>
+        <p class="flex justify-between">
+          <span>Defense:</span> <span>{{ fighter.defensePoints }}</span>
+        </p>
+      </div>
     </div>
   </div>
 </template>

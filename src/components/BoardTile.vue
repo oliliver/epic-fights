@@ -1,5 +1,6 @@
 <template>
-  <div class="group relative" :class="tile.classes" :key="tile.id">
+  <div class="group relative flex-none" :class="tile.classes, store.selectedPawn?.tile.id == tile.id && 'bg-opacity-90'"
+    :key="tile.id">
     <div v-if="!tile.isCornerTile" class="flex flex-col h-full w-full">
       <FighterPawn v-if="fighterOnThisTile" :fighter="fighterOnThisTile" :tile="tile" class="relative z-20" />
     </div>
