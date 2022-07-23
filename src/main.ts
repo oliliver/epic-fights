@@ -1,5 +1,16 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import { useStore } from './store'
+
 import './assets/index.css'
 import App from './App.vue'
 
-createApp(App).mount('#app')
+const pinia = createPinia()
+
+createApp(App).use(pinia).mount('#app')
+
+const store = useStore()
+
+store.initializeStore()
+
+

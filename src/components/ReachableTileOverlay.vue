@@ -1,0 +1,64 @@
+<template>
+  <transition :name="tile.isEnemy() && tile.isWithinAttackRange() ? 'fade-enemy' : 'fade'" appear>
+    <div @click="moveSelectedPawn" class="p-2 z-20 bg-gray-200 grid group"
+      :class="tile.isEnemy() && tile.isWithinAttackRange() ? 'opacity-100 enemy cursor-default' : 'cursor-pointer opacity-30'"
+      :style="{ transitionDelay: `${(tile.numberOfStepsAway ?? 1) * 50}ms` }" :key="store.selectedPawnId">
+      <div
+        class="bg-white h-1/2 w-1/2 m-auto opacity-0 shadow-inner group-hover:opacity-40 rounded-full col-start-1 row-start-1" />
+      <div v-if="tile.isEnemy() && tile.isWithinAttackRange()"
+        class="bg-red-700 rounded-lg  h-full w-full col-start-1 row-start-1" />
+      <div v-else-if="!tile.isOccupied()" :class="playerColor"
+        class="rounded-lg  h-full w-full col-start-1 row-start-1" />
+    </div>
+  </transition>
+</template>
+
+<script setup lang="ts">
+import constants from '../constants';
+import { computed, onMounted, ref } from 'vue';
+import { ReachableTile } from '../models/types'
+import { useStore } from "../store";
+
+const props = defineProps<{ tile: ReachableTile }>()
+const store = useStore()
+
+function moveSelectedPawn() {
+  store.moveSelectedPawn(props.tile)
+}
+
+const isMounted = ref(false)
+onMounted(() => {
+  setTimeout(() => isMounted.value = true, 0)
+})
+
+const playerColor = computed(() => store.selectedPawn ? constants.colors.bg[store.selectedPawn?.fighter.player.color] : '')
+
+</script>
+
+<style>
+.fade-enter-to,
+.fade-leave-from {
+  opacity: .3;
+}
+
+.fade-enemy-enter-to,
+.fade-enemy-leave-from {
+  opacity: 1;
+}
+
+.fade-enter-active,
+.fade-enemy-enter-active {
+  transition: opacity 300ms;
+}
+
+.fade-enter-from,
+.fade-leave-to,
+.fade-enemy-enter-from,
+.fade-enemy-leave-to {
+  opacity: 0;
+}
+
+.enemy {
+  cursor: crosshair;
+}
+</style>

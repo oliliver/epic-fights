@@ -1,23 +1,27 @@
 import Ability from './Ability'
-import cloneDeep from 'lodash/fp/cloneDeep'
 import constants from '../constants'
-import { FighterData, GridPosition } from './types'
 import Tile from './Tile'
+import { PlayerClass } from './Player'
+import { FighterData, GridPosition } from './types'
+import { nanoid } from 'nanoid'
 
-export const fighterData = {
+export const fighterData: { [key: number | string]: FighterData } = {
   1: {
     tier: 1,
     attackPoints: 3,
     movementPoints: 1,
-    defensePoints: 3, //?,
+    defensePoints: 3,
+    range: 1,
   },
   2: {
     tier: 2,
     attackPoints: 4,
     movementPoints: 2,
-    defensePoints: 2, //?
+    defensePoints: 0,
+    range: 1,
     abilities: {
-      superPunch: new Ability({
+      fireArrow: new Ability({
+        name: 'Fire arrow',
         uses: 1,
         damage: 8,
       })
@@ -27,38 +31,50 @@ export const fighterData = {
     tier: 3,
     attackPoints: 4,
     movementPoints: 3,
-    defensePoints: 1, //?
+    defensePoints: 1,
+    range: 1,
   },
   4: {
     tier: 4,
     attackPoints: 4,
     movementPoints: 4,
-    defensePoints: 0, //?
+    defensePoints: 2,
+    range: 1,
   }
 }
 
 export default class Fighter {
-  public healthPoints: number
+  public abilities: { [name: string]: Ability }
   public attackPoints: number
   public defensePoints: number
+  public healthPoints: number
+  public isAlive = true
+  public id: string
   public movementPoints: number
-  public tier: number
+  public player: PlayerClass
   public position: GridPosition
-  public abilities: {
-    [name: string]: Ability
-  }
+  public range: number
+  public tier: number
 
+  readonly healthPointsMax: number
+  readonly startingTile: Tile
 
   constructor(initialData: FighterData & {
-    position: GridPosition
+    startingTile: Tile
+    player: PlayerClass
   }) {
-    this.healthPoints = constants.DEFAULT_HP
+    this.abilities = initialData.abilities ?? {}
     this.attackPoints = initialData.attackPoints
-    this.movementPoints = initialData.movementPoints
     this.defensePoints = initialData.defensePoints
+    this.healthPoints = constants.DEFAULT_HP
+    this.healthPointsMax = constants.DEFAULT_HP
+    this.id = nanoid()
+    this.movementPoints = initialData.movementPoints
+    this.player = initialData.player
+    this.position = { row: initialData.startingTile.row, col: initialData.startingTile.col }
+    this.startingTile = initialData.startingTile
+    this.range = initialData.range
     this.tier = initialData.tier
-    this.abilities = cloneDeep(initialData.abilities ?? {})
-    this.position = cloneDeep(initialData.position)
   }
 
   /**
@@ -72,44 +88,56 @@ export default class Fighter {
 }
 
 export class Fighter1 extends Fighter {
-  constructor(position: GridPosition) {
+  constructor(args: { startingTile: Tile, player: PlayerClass }) {
+    const { startingTile, player } = args
+
     super(
       {
         ...fighterData[1],
-        position,
+        startingTile,
+        player,
       }
     )
   }
 }
 
 export class Fighter2 extends Fighter {
-  constructor(position: GridPosition) {
+  constructor(args: { startingTile: Tile, player: PlayerClass }) {
+    const { startingTile, player } = args
+
     super(
       {
         ...fighterData[2],
-        position,
+        startingTile,
+        player,
       }
     )
   }
 }
 
 export class Fighter3 extends Fighter {
-  constructor(position: GridPosition) {
+  constructor(args: { startingTile: Tile, player: PlayerClass }) {
+    const { startingTile, player } = args
+
     super(
       {
         ...fighterData[3],
-        position,
+        startingTile,
+        player,
       }
     )
   }
 }
 
 export class Fighter4 extends Fighter {
-  constructor(position: GridPosition) {
+  constructor(args: { startingTile: Tile, player: PlayerClass }) {
+    const { startingTile, player } = args
+
     super(
       {
         ...fighterData[4],
-        position,
+        startingTile,
+        player,
       }
     )
   }
