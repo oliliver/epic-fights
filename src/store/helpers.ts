@@ -15,7 +15,7 @@ export function getFighterOnTile(players: PlayerClass[], tile: Tile) {
 
     if (!player) break
 
-    fighter = player?.fighters.find(fighter => fighter.isOnTile(tile))
+    fighter = player?.fighters.find(fighter => fighter.isOnTile(tile) && fighter.isAlive)
 
     playerIndex++
   }

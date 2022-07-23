@@ -109,8 +109,6 @@ export const useStore = defineStore('main', {
     applyDamage(defender: Fighter, damage: number) {
       defender.healthPoints -= damage
 
-      console.log(defender.healthPoints)
-
       if (defender.healthPoints <= 0) {
         defender.isAlive = false
       }
