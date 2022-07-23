@@ -5,20 +5,23 @@ import { PlayerClass } from './Player'
 import { FighterData, GridPosition } from './types'
 import { nanoid } from 'nanoid'
 
-export const fighterData = {
+export const fighterData: { [key: number | string]: FighterData } = {
   1: {
     tier: 1,
     attackPoints: 3,
     movementPoints: 1,
-    defensePoints: 3, //?,
+    defensePoints: 3,
+    range: 1,
   },
   2: {
     tier: 2,
     attackPoints: 4,
     movementPoints: 2,
-    defensePoints: 2, //?
+    defensePoints: 0,
+    range: 1,
     abilities: {
-      superPunch: new Ability({
+      fireArrow: new Ability({
+        name: 'Fire arrow',
         uses: 1,
         damage: 8,
       })
@@ -28,13 +31,15 @@ export const fighterData = {
     tier: 3,
     attackPoints: 4,
     movementPoints: 3,
-    defensePoints: 1, //?
+    defensePoints: 1,
+    range: 1,
   },
   4: {
     tier: 4,
     attackPoints: 4,
     movementPoints: 4,
-    defensePoints: 0, //?
+    defensePoints: 2,
+    range: 1,
   }
 }
 
@@ -43,12 +48,15 @@ export default class Fighter {
   public attackPoints: number
   public defensePoints: number
   public healthPoints: number
+  public isAlive = true
   public id: string
   public movementPoints: number
   public player: PlayerClass
   public position: GridPosition
+  public range: number
   public tier: number
 
+  readonly healthPointsMax: number
   readonly startingTile: Tile
 
   constructor(initialData: FighterData & {
@@ -59,11 +67,13 @@ export default class Fighter {
     this.attackPoints = initialData.attackPoints
     this.defensePoints = initialData.defensePoints
     this.healthPoints = constants.DEFAULT_HP
+    this.healthPointsMax = constants.DEFAULT_HP
     this.id = nanoid()
     this.movementPoints = initialData.movementPoints
     this.player = initialData.player
     this.position = { row: initialData.startingTile.row, col: initialData.startingTile.col }
     this.startingTile = initialData.startingTile
+    this.range = initialData.range
     this.tier = initialData.tier
   }
 

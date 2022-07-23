@@ -1,5 +1,6 @@
 import constants from "../constants"
 import { useStore } from "../store";
+import Fighter from "./Fighter";
 
 const { GRID_HEIGHT, GRID_WIDTH } = constants
 
@@ -14,15 +15,44 @@ export default class Tile {
   readonly isInLastRow: boolean
   readonly row: number
 
-  readonly isOccupied: () => boolean
+  public getFighter: () => Fighter | null
+  public isWithinAttackRange: () => boolean
+  public isOccupied: () => boolean
+  public isAlly: () => boolean
+  public isEnemy: () => boolean
 
   public classes: string[] = []
 
   constructor(id: number, row: number, col: number) {
-    this.isOccupied = () => {
+
+    this.getFighter = function () {
       const store = useStore()
 
-      return Object.keys(store.fightersOnTiles).filter(key => store.fightersOnTiles[key]).some(tileId => tileId == String(this.id))
+      return store.fightersOnTiles[this.id] ?? null
+    }
+
+    this.isOccupied = function () {
+      return !!this.getFighter()?.isAlive
+    }
+
+    this.isAlly = function () {
+      const fighter = this.getFighter()
+      const store = useStore()
+
+      return fighter?.player.id == store.selectedPlayerId
+    }
+
+    this.isEnemy = function () {
+      const fighter = this.getFighter()
+      const store = useStore()
+
+      return !!(fighter?.isAlive && fighter.player.id !== store.selectedPlayerId)
+    }
+
+    this.isWithinAttackRange = function () {
+      const store = useStore()
+
+      return (store.reachableTilesKeyedById[this.id]?.numberOfStepsAway ?? Infinity) <= (store.selectedPawn?.fighter.range ?? 0)
     }
 
     this.col = col

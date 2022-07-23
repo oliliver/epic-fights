@@ -43,7 +43,7 @@ export function isWithinRangeOrthogonally(positionA: GridPosition, positionB: Gr
   )
 }
 
-function getTileIdFromPosition(position: GridPosition) {
+export function getTileIdFromPosition(position: GridPosition) {
   const { col, row } = position
 
   return row * GRID_WIDTH - (GRID_WIDTH - col) - 1

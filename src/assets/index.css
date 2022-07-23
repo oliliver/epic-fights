@@ -6,3 +6,15 @@
   height: 100vh;
   position: relative;
 }
+
+.text-clamp-xs {
+  font-size: clamp(8px, 1vw, 16px);
+}
+
+.text-clamp-sm {
+  font-size: clamp(10px, 1.15vw, 24px);
+}
+
+.text-clamp-md {
+  font-size: clamp(16px, 1.3vw, 28px);
+}

@@ -1,10 +1,14 @@
 <template>
-  <transition name="fade" appear>
-    <div @click="movePawn" class="p-2 cursor-pointer z-20 bg-gray-200 grid group opacity-30"
+  <transition :name="tile.isEnemy() && tile.isWithinAttackRange() ? 'fade-enemy' : 'fade'" appear>
+    <div @click="moveSelectedPawn" class="p-2 z-20 bg-gray-200 grid group"
+      :class="tile.isEnemy() && tile.isWithinAttackRange() ? 'opacity-100 enemy cursor-default' : 'cursor-pointer opacity-30'"
       :style="{ transitionDelay: `${(tile.numberOfStepsAway ?? 1) * 50}ms` }" :key="store.selectedPawnId">
       <div
         class="bg-white h-1/2 w-1/2 m-auto opacity-0 shadow-inner group-hover:opacity-40 rounded-full col-start-1 row-start-1" />
-      <div :class="playerColor" class="rounded-lg  h-full w-full col-start-1 row-start-1" />
+      <div v-if="tile.isEnemy() && tile.isWithinAttackRange()"
+        class="bg-red-700 rounded-lg  h-full w-full col-start-1 row-start-1" />
+      <div v-else-if="!tile.isOccupied()" :class="playerColor"
+        class="rounded-lg  h-full w-full col-start-1 row-start-1" />
     </div>
   </transition>
 </template>
@@ -18,8 +22,8 @@ import { useStore } from "../store";
 const props = defineProps<{ tile: ReachableTile }>()
 const store = useStore()
 
-function movePawn() {
-  store.movePawn(props.tile)
+function moveSelectedPawn() {
+  store.moveSelectedPawn(props.tile)
 }
 
 const isMounted = ref(false)
@@ -37,12 +41,24 @@ const playerColor = computed(() => store.selectedPawn ? constants.colors.bg[stor
   opacity: .3;
 }
 
-.fade-enter-active {
+.fade-enemy-enter-to,
+.fade-enemy-leave-from {
+  opacity: 1;
+}
+
+.fade-enter-active,
+.fade-enemy-enter-active {
   transition: opacity 300ms;
 }
 
 .fade-enter-from,
-.fade-leave-to {
+.fade-leave-to,
+.fade-enemy-enter-from,
+.fade-enemy-leave-to {
   opacity: 0;
+}
+
+.enemy {
+  cursor: crosshair;
 }
 </style>

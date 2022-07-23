@@ -11,6 +11,7 @@ export type FighterData = {
   attackPoints: number,
   movementPoints: number,
   defensePoints: number,
+  range: number,
   abilities?: {
     [name: string]: Ability
   }
@@ -18,4 +19,6 @@ export type FighterData = {
 
 export type Public<T> = { [P in keyof T]: T[P] }
 
-export type ReachableTile = (Tile & { numberOfStepsAway?: number })
+export type ReachableTile = (Tile & {
+  numberOfStepsAway?: number
+})

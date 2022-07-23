@@ -4,9 +4,8 @@ import Player from '../models/Player'
 import Tile from '../models/Tile'
 import { defineStore } from 'pinia'
 import { MainStoreData } from './types'
-import { getFighterOnTile, getOrthogonallyDiagonalTiles, isWithinGrid, isWithinRangeOrthogonally } from './helpers'
+import { getFighterOnTile, getOrthogonallyDiagonalTiles, getTileIdFromPosition, isWithinGrid, isWithinRangeOrthogonally } from './helpers'
 import { ReachableTile } from '../models/types'
-import { uniqBy } from 'lodash'
 
 export const useStore = defineStore('main', {
   state(): MainStoreData {
@@ -14,6 +13,7 @@ export const useStore = defineStore('main', {
       selectedPawn: null,
       tiles: [],
       reachableTiles: [],
+      reachableTilesKeyedById: {},
       players: [],
     }
   },
@@ -58,37 +58,46 @@ export const useStore = defineStore('main', {
         tile,
       }
 
-      const allReachableTiles = []
+      this.reachableTiles = []
+      this.reachableTilesKeyedById = {}
+
       let edgeTiles = [tile]
 
       for (let i = 0; i < fighter.movementPoints; i++) {
-        const newEdgeTiles: Tile[] = []
+        const newEdgeTiles: ReachableTile[] = []
 
         edgeTiles.forEach(edgeTile => {
           const orthogonallyDiagonalTiles = getOrthogonallyDiagonalTiles(edgeTile)
+          const isAlreadyAdded = (tile: Tile) => !!this.reachableTilesKeyedById[tile.id]
+          const isValidForThisFighter = (tile: Tile) => (!tile.isEdgeTile || (fighter.startingTile.id !== this.selectedPawn?.tile.id && fighter.startingTile.id == tile.id))
 
-          const reachableTiles = orthogonallyDiagonalTiles.filter(tile =>
-            isWithinGrid(tile) &&
+          const accessibleTiles = orthogonallyDiagonalTiles.filter(tile =>
             isWithinRangeOrthogonally(tile, edgeTile, 1) &&
-            !edgeTiles.some(t => t.id == tile.id) &&
-            !tile.isOccupied() &&
-            (!tile.isEdgeTile || fighter.startingTile.id == tile.id)
-          ).map(t => ({ ...t, numberOfStepsAway: i + 1 }))
+            !isAlreadyAdded(tile) &&
+            isValidForThisFighter(tile) &&
+            isWithinGrid(tile)
+          )
 
-          newEdgeTiles.push(...reachableTiles)
+          accessibleTiles.forEach(tile => {
+            const reachableTile = { ...tile, numberOfStepsAway: i + 1 }
+
+            if (!tile.isOccupied()) {
+              newEdgeTiles.push(reachableTile)
+            }
+
+            this.reachableTiles.push(reachableTile)
+            this.reachableTilesKeyedById[tile.id] = reachableTile
+          })
         })
 
-        allReachableTiles.push(...newEdgeTiles)
         edgeTiles = newEdgeTiles
       }
-
-      this.reachableTiles = uniqBy(allReachableTiles, 'id')
     },
     deselectPawn() {
       this.selectedPawn = null
       this.reachableTiles = []
     },
-    movePawn(targetTile: Tile) {
+    moveSelectedPawn(targetTile: Tile) {
       const targetFighter = this.selectedPawn?.fighter
       const { col, row } = targetTile
 
@@ -96,15 +105,41 @@ export const useStore = defineStore('main', {
 
       [targetFighter.position.col, targetFighter.position.row] = [col, row]
       this.deselectPawn()
-    }
+    },
+    applyDamage(defender: Fighter, damage: number) {
+      defender.healthPoints -= damage
+
+      console.log(defender.healthPoints)
+
+      if (defender.healthPoints <= 0) {
+        defender.isAlive = false
+      }
+    },
+    attackPawn(defender: Fighter) {
+      const attacker = this.selectedPawn?.fighter
+
+      if (!attacker || !defender) return
+
+      const damage = Math.max(0, attacker.attackPoints - defender.defensePoints)
+
+      this.applyDamage(defender, damage)
+
+      if (!defender.isAlive && attacker.range == 1) {
+        const defenderTile = this.tiles[getTileIdFromPosition(defender.position)]
+        this.moveSelectedPawn(defenderTile)
+      }
+
+      this.deselectPawn()
+    },
   },
   getters: {
     fightersOnTiles: state => {
-      return state.tiles.reduce((acc: { [index: string | number]: Fighter | undefined }, tile) => ({
+      return state.tiles.reduce((acc: { [tileId: string | number]: Fighter | undefined }, tile) => ({
         ...acc,
         [String(tile.id)]: getFighterOnTile(state.players, tile)
       }), {})
     },
     selectedPawnId: state => state.selectedPawn?.fighter.id,
+    selectedPlayerId: state => state.selectedPawn?.fighter.player.id
   }
 })

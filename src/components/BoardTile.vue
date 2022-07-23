@@ -10,7 +10,6 @@
 <script setup lang="ts">
 import FighterPawn from "../components/FighterPawn.vue";
 import Tile from '../models/Tile';
-import Fighter from '../models/Fighter';
 import { storeToRefs } from 'pinia';
 import { useStore } from '../store';
 import { computed } from "vue";
@@ -22,6 +21,8 @@ const store = useStore()
 const { fightersOnTiles } = storeToRefs(store)
 
 const fighterOnThisTile = computed(() => {
-  return fightersOnTiles.value[props.tile.id] as Fighter
+  const fighter = fightersOnTiles.value[props.tile.id]
+
+  return fighter?.isAlive ? fighter : null
 })
 </script>

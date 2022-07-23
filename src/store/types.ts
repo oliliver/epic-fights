@@ -16,5 +16,6 @@ export type MainStoreData = {
   } | null
   tiles: Tile[]
   reachableTiles: ReachableTile[]
+  reachableTilesKeyedById: { [id: string | number]: ReachableTile }
   players: PlayerClass[]
 }
