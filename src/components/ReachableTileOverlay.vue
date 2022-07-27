@@ -1,13 +1,13 @@
 <template>
-  <transition :name="tile.isEnemy() && tile.isWithinAttackRange() ? 'fade-enemy' : 'fade'" appear>
-    <div @click="moveSelectedPawn" class="p-2 z-20 bg-gray-200 grid group"
-      :class="tile.isEnemy() && tile.isWithinAttackRange() ? 'opacity-100 enemy cursor-default' : 'cursor-pointer opacity-30'"
+  <transition :name="tile.isEnemy() && tile.isWithinAttackRange() ? 'fade' : 'fade-30'" appear>
+    <div @click="moveSelectedPawn" class="p-2 z-20 bg-gray-200 grid group cursor-pointer"
+      :class="tile.isEnemy() && tile.isWithinAttackRange() ? 'opacity-100' : 'opacity-30'"
       :style="{ transitionDelay: `${(tile.numberOfStepsAway ?? 1) * 50}ms` }" :key="store.selectedPawnId">
       <div
         class="bg-white h-1/2 w-1/2 m-auto opacity-0 shadow-inner group-hover:opacity-40 rounded-full col-start-1 row-start-1" />
       <div v-if="tile.isEnemy() && tile.isWithinAttackRange()"
         class="bg-red-700 rounded-lg  h-full w-full col-start-1 row-start-1" />
-      <div v-else-if="!tile.isOccupied()" :class="playerColor"
+      <div v-else-if="!tile.isOccupied()" :style="{ backgroundColor: playerColor }"
         class="rounded-lg  h-full w-full col-start-1 row-start-1" />
     </div>
   </transition>
@@ -31,34 +31,29 @@ onMounted(() => {
   setTimeout(() => isMounted.value = true, 0)
 })
 
-const playerColor = computed(() => store.selectedPawn ? constants.colors.bg[store.selectedPawn?.fighter.player.color] : '')
-
+const playerColor = computed(() => store.selectedPlayerId ? store.players.find(p => p.id == store.selectedPlayerId)?.colorValue() : '')
 </script>
 
 <style>
-.fade-enter-to,
-.fade-leave-from {
+.fade-30-enter-to,
+.fade-30-leave-from {
   opacity: .3;
 }
 
-.fade-enemy-enter-to,
-.fade-enemy-leave-from {
+.fade-enter-to,
+.fade-leave-from {
   opacity: 1;
 }
 
-.fade-enter-active,
-.fade-enemy-enter-active {
+.fade-30-enter-active,
+.fade-enter-active {
   transition: opacity 300ms;
 }
 
+.fade-30-enter-from,
+.fade-30-leave-to,
 .fade-enter-from,
-.fade-leave-to,
-.fade-enemy-enter-from,
-.fade-enemy-leave-to {
+.fade-leave-to {
   opacity: 0;
-}
-
-.enemy {
-  cursor: crosshair;
 }
 </style>

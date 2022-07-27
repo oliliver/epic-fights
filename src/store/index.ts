@@ -1,20 +1,45 @@
-import constants from '../constants'
+import constants, { ColorName } from '../constants'
 import Fighter from '../models/Fighter'
 import Player from '../models/Player'
 import Tile from '../models/Tile'
 import { defineStore } from 'pinia'
-import { MainStoreData } from './types'
+import { MainStoreData, MenuType } from './types'
 import { getFighterOnTile, getOrthogonallyDiagonalTiles, getTileIdFromPosition, isWithinGrid, isWithinRangeOrthogonally } from './helpers'
 import { ReachableTile } from '../models/types'
+import { Fighter1, Fighter2, Fighter3, Fighter4 } from '../models/Fighter'
 
 export const useStore = defineStore('main', {
   state(): MainStoreData {
     return {
-      selectedPawn: null,
-      tiles: [],
+      activeMenu: 'NEW_GAME',
+      // defaultPlayers: [],
+      initialized: false,
+      players: [],
       reachableTiles: [],
       reachableTilesKeyedById: {},
-      players: [],
+      selectedPawn: null,
+      static: {
+        fighterPool: [],
+        tiles: [],
+        playerSlots: [
+          {
+            defaultColor: ColorName.sky,
+            tiles: [],
+          },
+          {
+            defaultColor: ColorName.lime,
+            tiles: [],
+          },
+          {
+            defaultColor: ColorName.amber,
+            tiles: [],
+          },
+          {
+            defaultColor: ColorName.rose,
+            tiles: [],
+          },
+        ]
+      }
     }
   },
   actions: {
@@ -25,30 +50,44 @@ export const useStore = defineStore('main', {
 
       for (let row = 1; row <= GRID_HEIGHT; row++) {
         for (let col = 1; col <= GRID_WIDTH; col++) {
-          this.tiles.push(new Tile(tileId++, row, col))
+          this.static.tiles.push(new Tile(tileId++, row, col))
         }
       }
 
-      Object.freeze(this.tiles)
+      this.static.playerSlots[0].tiles = this.static.tiles.filter(tile => !tile.isCornerTile && tile.isInFirstRow)
+      this.static.playerSlots[1].tiles = this.static.tiles.filter(tile => !tile.isCornerTile && tile.isInLastRow)
+      this.static.playerSlots[2].tiles = this.static.tiles.filter(tile => !tile.isCornerTile && tile.isInFirstCol)
+      this.static.playerSlots[3].tiles = this.static.tiles.filter(tile => !tile.isCornerTile && tile.isInLastCol)
 
-      const player1 = new Player({
-        tiles: this.tiles.filter(tile => !tile.isCornerTile && tile.isInFirstRow),
-        color: 'blue',
-      })
-      const player2 = new Player({
-        tiles: this.tiles.filter(tile => !tile.isCornerTile && tile.isInLastRow),
-        color: 'green',
-      })
-      const player3 = new Player({
-        tiles: this.tiles.filter(tile => !tile.isCornerTile && tile.isInFirstCol),
-        color: 'yellow',
-      })
-      const player4 = new Player({
-        tiles: this.tiles.filter(tile => !tile.isCornerTile && tile.isInLastCol),
-        color: 'red',
-      })
+      const fighters = [new Fighter1(), new Fighter2(), new Fighter3, new Fighter4()]
+      fighters.forEach(f => this.static.fighterPool.push({ fighter: f, maxCount: 2 }))
 
-      this.players.push(player1, player2, player3, player4)
+      // Object.freeze(this.static)
+
+      // const player1 = new Player({
+      //   tiles: this.static.tiles.filter(tile => !tile.isCornerTile && tile.isInFirstRow),
+      //   color: 'blue',
+      // })
+      // const player2 = new Player({
+      //   tiles: this.static.tiles.filter(tile => !tile.isCornerTile && tile.isInLastRow),
+      //   color: 'green',
+      // })
+      // const player3 = new Player({
+      //   tiles: this.static.tiles.filter(tile => !tile.isCornerTile && tile.isInFirstCol),
+      //   color: 'yellow',
+      // })
+      // const player4 = new Player({
+      //   tiles: this.static.tiles.filter(tile => !tile.isCornerTile && tile.isInLastCol),
+      //   color: 'red',
+      // })
+
+      // this.defaultPlayers.push(player1, player2, player3, player4)
+      // this.players = [...this.defaultPlayers]
+
+      this.initialized = true
+    },
+    startGame() {
+      this.players.forEach(player => player.assignTileColors())
     },
     selectPawn(fighter: Fighter, tile: Tile) {
       if (!fighter || !tile) return
@@ -123,16 +162,19 @@ export const useStore = defineStore('main', {
       this.applyDamage(defender, damage)
 
       if (!defender.isAlive && attacker.range == 1) {
-        const defenderTile = this.tiles[getTileIdFromPosition(defender.position)]
+        const defenderTile = this.static.tiles[getTileIdFromPosition(defender.position)]
         this.moveSelectedPawn(defenderTile)
       }
 
       this.deselectPawn()
     },
+    setActiveMenu(newActiveMenu: MenuType) {
+      this.activeMenu = newActiveMenu
+    },
   },
   getters: {
     fightersOnTiles: state => {
-      return state.tiles.reduce((acc: { [tileId: string | number]: Fighter | undefined }, tile) => ({
+      return state.static.tiles.reduce((acc: { [tileId: string | number]: Fighter | undefined }, tile) => ({
         ...acc,
         [String(tile.id)]: getFighterOnTile(state.players, tile)
       }), {})

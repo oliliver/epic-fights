@@ -54,9 +54,9 @@ export function getOrthogonallyDiagonalTiles(position: GridPosition) {
   const { col, row } = position
 
   return [
-    store.tiles[getTileIdFromPosition({ col: col + 1, row })],
-    store.tiles[getTileIdFromPosition({ col: col - 1, row })],
-    store.tiles[getTileIdFromPosition({ row: row + 1, col })],
-    store.tiles[getTileIdFromPosition({ row: row - 1, col })],
+    store.static.tiles[getTileIdFromPosition({ col: col + 1, row })],
+    store.static.tiles[getTileIdFromPosition({ col: col - 1, row })],
+    store.static.tiles[getTileIdFromPosition({ row: row + 1, col })],
+    store.static.tiles[getTileIdFromPosition({ row: row - 1, col })],
   ].filter(v => !!v)
 }

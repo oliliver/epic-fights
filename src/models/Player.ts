@@ -1,38 +1,67 @@
-import constants from '../constants'
+import constants, { ColorName, ColorIntensity } from '../constants'
 import Fighter, { Fighter1, Fighter2, Fighter3, Fighter4 } from './Fighter'
 import Tile from './Tile'
 import { nanoid } from 'nanoid'
-import { PlayerColor, Public } from './types'
+import { Public } from './types'
 
 export default class Player {
   public id: string
+  public slotIndex: number
   public tiles: Tile[]
-  public color: PlayerColor
+  public color: ColorName
   public fighters: Fighter[] = []
 
-  constructor(initialData: { tiles: Tile[], color: PlayerColor }) {
+  constructor(initialData: { tiles: Tile[], color: ColorName, slotIndex: number }) {
     this.id = nanoid()
     this.color = initialData.color
+    this.slotIndex = initialData.slotIndex
     this.tiles = initialData.tiles
-
-    this.assignFighters()
-    this.assignTileColors()
   }
 
-  private assignTileColors() {
+  public assignTileColors() {
     this.tiles.forEach(tile => {
-      tile.classes = [constants.colors.bg[this.color]]
+      tile.styles['background-color'] = constants.COLORS[this.color][500]
     })
   }
 
-  private assignFighters() {
-    this.fighters = [
-      new Fighter1({ startingTile: this.tiles[0], player: this }),
-      new Fighter2({ startingTile: this.tiles[1], player: this }),
-      new Fighter3({ startingTile: this.tiles[2], player: this }),
-      new Fighter4({ startingTile: this.tiles[3], player: this }),
-    ]
+  public colorValue(intensity: ColorIntensity = 500, opacity = 100) {
+    if (opacity < 0 || opacity > 100) {
+      console.error('invalid opacity for colorValue:', opacity)
+      opacity = 100
+    }
+
+    const opacityInHex = Math.round(opacity * 2.55).toString(16)
+
+    return `${constants.COLORS[this.color][intensity]}${opacityInHex}`
+  }
+
+  public addFighter(fighterModel: Fighter, tile: Tile) {
+    const fighterData = {
+      startingTile: tile,
+      player: this
+    }
+
+    const fighter = (() => {
+      switch (fighterModel.fighterId) {
+        case 1: return new Fighter1(fighterData)
+        case 2: return new Fighter2(fighterData)
+        case 3: return new Fighter3(fighterData)
+        default: return new Fighter4(fighterData)
+      }
+    })()
+
+    this.fighters.push(fighter)
+  }
+
+  public removeFighter(fighter: Fighter) {
+    const indexOfFighter = this.fighters.findIndex(f => f.id == fighter.id)
+
+    if (indexOfFighter !== -1) {
+      this.fighters.splice(indexOfFighter, 1)
+    }
   }
 }
 
 export type PlayerClass = Public<Player>
+
+export const neutralPlayer = new Player({ tiles: [], color: ColorName.gray, slotIndex: Infinity })

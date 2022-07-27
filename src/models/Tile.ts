@@ -1,3 +1,4 @@
+import { CSSProperties } from "vue";
 import constants from "../constants"
 import { useStore } from "../store";
 import Fighter from "./Fighter";
@@ -22,6 +23,7 @@ export default class Tile {
   public isEnemy: () => boolean
 
   public classes: string[] = []
+  public styles: { [T in keyof CSSProperties]?: CSSProperties[T] } = {}
 
   constructor(id: number, row: number, col: number) {
 
@@ -67,10 +69,14 @@ export default class Tile {
 
     if (this.isCornerTile) {
       this.classes = ['bg-transparent']
-    } else if (!this.isEdgeTile) {
+    } else if (this.isEdgeTile) {
+      this.classes = ['bg-gray-700']
+    } else {
       this.classes = ['bg-gray-200']
     }
 
     Object.seal(this)
   }
 }
+
+export const neutralTile = new Tile(-1, -1, -1)

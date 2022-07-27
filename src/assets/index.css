@@ -22,3 +22,16 @@
 .text-clamp-md {
   font-size: clamp(16px, 1.3vw, 28px);
 }
+
+.menu-body {
+  min-width: 8rem;
+  @apply flex flex-col bg-white p-2 rounded text-center shadow-2xl;
+}
+
+.menu-btn {
+  @apply border border-gray-500 rounded bg-white;
+}
+
+.menu-btn:hover {
+  @apply bg-gray-100;
+}

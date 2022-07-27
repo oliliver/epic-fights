@@ -1,13 +1,14 @@
 import Ability from './Ability'
 import constants from '../constants'
-import Tile from './Tile'
-import { PlayerClass } from './Player'
+import Tile, { neutralTile } from './Tile'
+import { PlayerClass, neutralPlayer } from './Player'
 import { FighterData, GridPosition } from './types'
 import { nanoid } from 'nanoid'
 
 export const fighterData: { [key: number | string]: FighterData } = {
   1: {
     tier: 1,
+    fighterId: 1,
     attackPoints: 3,
     movementPoints: 1,
     defensePoints: 3,
@@ -15,6 +16,7 @@ export const fighterData: { [key: number | string]: FighterData } = {
   },
   2: {
     tier: 2,
+    fighterId: 2,
     attackPoints: 4,
     movementPoints: 2,
     defensePoints: 0,
@@ -29,6 +31,7 @@ export const fighterData: { [key: number | string]: FighterData } = {
   },
   3: {
     tier: 3,
+    fighterId: 3,
     attackPoints: 4,
     movementPoints: 3,
     defensePoints: 1,
@@ -36,6 +39,7 @@ export const fighterData: { [key: number | string]: FighterData } = {
   },
   4: {
     tier: 4,
+    fighterId: 4,
     attackPoints: 4,
     movementPoints: 4,
     defensePoints: 2,
@@ -44,35 +48,37 @@ export const fighterData: { [key: number | string]: FighterData } = {
 }
 
 export default class Fighter {
-  public abilities: { [name: string]: Ability }
-  public attackPoints: number
-  public defensePoints: number
   public healthPoints: number
   public isAlive = true
-  public id: string
-  public movementPoints: number
   public player: PlayerClass
   public position: GridPosition
-  public range: number
-  public tier: number
 
+  readonly abilities: { [name: string]: Ability }
+  readonly attackPoints: number
+  readonly defensePoints: number
+  readonly fighterId: number
   readonly healthPointsMax: number
+  readonly id: string
+  readonly movementPoints: number
+  readonly range: number
   readonly startingTile: Tile
+  readonly tier: number
 
   constructor(initialData: FighterData & {
-    startingTile: Tile
-    player: PlayerClass
+    startingTile?: Tile
+    player?: PlayerClass
   }) {
     this.abilities = initialData.abilities ?? {}
     this.attackPoints = initialData.attackPoints
     this.defensePoints = initialData.defensePoints
+    this.fighterId = initialData.fighterId
     this.healthPoints = constants.DEFAULT_HP
     this.healthPointsMax = constants.DEFAULT_HP
     this.id = nanoid()
     this.movementPoints = initialData.movementPoints
-    this.player = initialData.player
-    this.position = { row: initialData.startingTile.row, col: initialData.startingTile.col }
-    this.startingTile = initialData.startingTile
+    this.player = initialData.player ?? neutralPlayer
+    this.position = { row: initialData.startingTile?.row ?? -1, col: initialData.startingTile?.col ?? -1 }
+    this.startingTile = initialData.startingTile ?? neutralTile
     this.range = initialData.range
     this.tier = initialData.tier
   }
@@ -88,8 +94,8 @@ export default class Fighter {
 }
 
 export class Fighter1 extends Fighter {
-  constructor(args: { startingTile: Tile, player: PlayerClass }) {
-    const { startingTile, player } = args
+  constructor(args?: { startingTile?: Tile, player?: PlayerClass }) {
+    const { startingTile, player } = args ?? {}
 
     super(
       {
@@ -102,8 +108,8 @@ export class Fighter1 extends Fighter {
 }
 
 export class Fighter2 extends Fighter {
-  constructor(args: { startingTile: Tile, player: PlayerClass }) {
-    const { startingTile, player } = args
+  constructor(args?: { startingTile?: Tile, player?: PlayerClass }) {
+    const { startingTile, player } = args ?? {}
 
     super(
       {
@@ -116,8 +122,8 @@ export class Fighter2 extends Fighter {
 }
 
 export class Fighter3 extends Fighter {
-  constructor(args: { startingTile: Tile, player: PlayerClass }) {
-    const { startingTile, player } = args
+  constructor(args?: { startingTile?: Tile, player?: PlayerClass }) {
+    const { startingTile, player } = args ?? {}
 
     super(
       {
@@ -130,8 +136,8 @@ export class Fighter3 extends Fighter {
 }
 
 export class Fighter4 extends Fighter {
-  constructor(args: { startingTile: Tile, player: PlayerClass }) {
-    const { startingTile, player } = args
+  constructor(args?: { startingTile?: Tile, player?: PlayerClass }) {
+    const { startingTile, player } = args ?? {}
 
     super(
       {

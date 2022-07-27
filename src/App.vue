@@ -1,5 +1,8 @@
 
 <template>
+  <transition name="fade" mode="out-in" appear>
+    <GameMenu v-if="store.initialized && store.activeMenu !== null" class="absolute inset-0 z-50" />
+  </transition>
   <label for="animate"
     class="absolute right-2 top-0 flex gap-2 select-none cursor-pointer text-gray-700 hover:text-gray-900">
     <input id="animate" type="checkbox" v-model="animate" />
@@ -14,15 +17,16 @@
       gridTemplateColumns: '1fr min-content 1fr',
       gridTemplateRows: gridSize,
     }">
-    <div id="board-grid" class="w-full flex-none col-start-2 grid gap-1 bg-gray-900 p-4 rounded-md mx-auto" :style="{
-      gridTemplateColumns: `repeat(${constants.GRID_WIDTH}, 1fr)`,
-      gridTemplateRows: `repeat(${constants.GRID_HEIGHT}, 1fr)`,
-      height: gridSize,
-      width: gridSize
-    }">
+    <div v-if="store.initialized" id="board-grid"
+      class="w-full flex-none col-start-2 grid gap-1 bg-gray-900 p-4 rounded-md mx-auto" :style="{
+        gridTemplateColumns: `repeat(${constants.GRID_WIDTH}, 1fr)`,
+        gridTemplateRows: `repeat(${constants.GRID_HEIGHT}, 1fr)`,
+        height: gridSize,
+        width: gridSize
+      }">
       <ReachableTileOverlay v-for="tile in store.reachableTiles" :tile="tile"
         :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
-      <BoardTile v-for="tile in store.tiles" :tile="tile"
+      <BoardTile v-for="tile in store.static.tiles" :tile="tile"
         :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
     </div>
     <div class="row-start-1 col-start-1 grid grid-cols-2 xl:grid-cols-1 gap-4 max-w-full">
@@ -33,7 +37,7 @@
 
 <script setup lang="ts">
 import { fighterData } from './models/Fighter'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useStorage, useWindowSize } from '@vueuse/core'
 import { useStore } from './store'
 import constants from "./constants";
@@ -41,20 +45,33 @@ import BoardTile from './components/BoardTile.vue'
 import FighterInfo from './components/FighterInfo.vue'
 import ReachableTileOverlay from './components/ReachableTileOverlay.vue';
 import Title from "./components/Title.vue";
+import GameMenu from './components/Menues/GameMenu.vue';
+
+const store = useStore()
+const showGameMenuOnEsc = (event: KeyboardEvent) => {
+  if (event.key == 'Escape') {
+    store.setActiveMenu(store.activeMenu === null ? 'MAIN_MENU' : null)
+  }
+}
 
 const animate = useStorage('animate', true)
-let isMounted = ref(false)
-let isAnimated = ref(false)
+const isMounted = ref(false)
+const isAnimated = ref(false)
 onMounted(() => {
   setTimeout(() => isMounted.value = true, 0)
   setTimeout(() => isAnimated.value = true, 3500)
+
+  document.addEventListener('keydown', showGameMenuOnEsc)
 })
 
-const store = useStore()
+onUnmounted(() => {
+  document.removeEventListener('keydown', showGameMenuOnEsc)
+})
+
 
 const windowSize = useWindowSize()
 
-const gridSize = computed(() => `${Math.ceil(Math.min(windowSize.height.value * 0.7, windowSize.width.value * 0.95))}px`) 
+const gridSize = computed(() => `${Math.ceil(Math.min(windowSize.height.value * 0.7, windowSize.width.value * 0.95))}px`)
 </script>
 
 <style>
