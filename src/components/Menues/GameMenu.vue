@@ -1,21 +1,24 @@
 <template>
   <div class="grid place-items-center bg-black bg-opacity-40 overflow-y-auto pt-[5vh] pb-[20vh]" @click="hideMenu">
-    <MainMenu v-if="store.activeMenu == 'MAIN_MENU'" />
-    <NewGameMenu v-if="store.activeMenu == 'NEW_GAME'" />
+    <MainMenu />
+    <NewGameMenu />
+    <SettingsMenu />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useStore } from "../../store";
+import { MenuName } from "../../store/types";
 import MainMenu from "./MainMenu.vue";
 import NewGameMenu from "./NewGameMenu.vue";
+import SettingsMenu from "./SettingsMenu.vue";
 
 const store = useStore()
 
 function hideMenu(e: MouseEvent) {
   if (e.target !== e.currentTarget) return
 
-  store.setActiveMenu(null)
+  store.setActiveMenu(MenuName.null)
 }
 </script>
 

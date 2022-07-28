@@ -1,15 +1,28 @@
 import { defineStore } from 'pinia'
-import { MainState, MenuType } from './types'
+import { MainState, MenuName } from './types'
 import { useGameStore } from './gameStore';
+import { useStorage } from '@vueuse/core'
+import { Menu } from '../models/Menu';
 
 export * from "./gameStore";
 export * from "./boardStore";
 
+new Menu({
+  name: MenuName.MAIN_MENU, children: [
+    { name: MenuName.SETTINGS },
+    { name: MenuName.NEW_GAME },
+  ]
+})
+
 export const useStore = defineStore('main', {
   state(): MainState {
     return {
-      activeMenu: null,
+      activeMenu: MenuName.null,
       initialized: false,
+      menues: Menu.allMenues,
+      settings: useStorage('settings', {
+        useSplashScreen: true,
+      })
     }
   },
   actions: {
@@ -20,7 +33,7 @@ export const useStore = defineStore('main', {
 
       this.initialized = true
     },
-    setActiveMenu(newActiveMenu: MenuType) {
+    setActiveMenu(newActiveMenu: MenuName) {
       this.activeMenu = newActiveMenu
     },
   },

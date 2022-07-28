@@ -3,8 +3,15 @@ import Tile from "../models/Tile"
 import { PlayerClass } from "../models/Player"
 import { ReachableTile } from "../models/types"
 import { ColorName } from "../constants"
+import { RemovableRef } from "@vueuse/core"
+import { Menu } from "../models/Menu"
 
-export type MenuType = 'MAIN_MENU' | 'NEW_GAME' | null
+export enum MenuName {
+  MAIN_MENU = 'MAIN_MENU',
+  NEW_GAME = 'NEW_GAME',
+  SETTINGS = 'SETTINGS',
+  null = 'null'
+}
 
 export type GroupedPositionBoolean = {
   [col: string]: {
@@ -22,9 +29,15 @@ export type FighterInPool = {
   maxCount: number
 }
 
+export type MenuCreateInput = { name: MenuName, parent?: Menu, children?: MenuCreateInput[] }
+
 export type MainState = {
   initialized: boolean
-  activeMenu: MenuType
+  activeMenu: MenuName
+  menues: Menu[]
+  settings: RemovableRef<{
+    useSplashScreen: boolean
+  }>
 }
 
 export type BoardState = {

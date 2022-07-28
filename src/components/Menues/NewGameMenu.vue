@@ -1,6 +1,5 @@
 <template>
-  <div class="menu-body">
-    <h1 class="font-bold mb-2">New Game</h1>
+  <BaseMenu heading="New Game" :menu-name="MenuName.NEW_GAME">
     <div class="text-left flex flex-col gap-1">
       <div v-for="(player, i) in chosenPlayers" class="p-2 border flex flex-col gap-2 border-gray-400 rounded"
         :style="{ backgroundColor: player.colorValue(200) }">
@@ -42,7 +41,7 @@
       :color="constants.COLORS.amber[500]" @click="startGame">
       Start!
     </BaseButton>
-  </div>
+  </BaseMenu>
 </template>
 
 <script setup lang="ts">
@@ -51,11 +50,12 @@ import Player, { PlayerClass } from "../../models/Player";
 import FighterToken from "../FighterToken.vue";
 import Tile from "../../models/Tile";
 import Fighter from "../../models/Fighter";
-import { FighterInPool } from "../../store/types";
+import { FighterInPool, MenuName } from "../../store/types";
 import { getFighterOnTile } from "../../store/helpers";
 import { useStore, useGameStore } from '../../store'
 import BaseButton from "../BaseButton.vue";
 import constants from '../../constants'
+import BaseMenu from "./BaseMenu.vue";
 
 const store = useStore()
 const gameStore = useGameStore()
@@ -156,6 +156,6 @@ const allPlayersHaveAtLeastOneFighter = computed(() => !!chosenPlayers.value.eve
 function startGame() {
   gameStore.players = [...chosenPlayers.value]
   gameStore.startGame()
-  store.setActiveMenu(null)
+  store.setActiveMenu(MenuName.null)
 }
 </script>
