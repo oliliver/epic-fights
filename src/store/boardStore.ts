@@ -49,6 +49,14 @@ export const useBoardStore = defineStore('boardStore', {
         edgeTiles = newEdgeTiles
       }
     },
+    calculateTilesWithinDistance(origin: Tile, fighter: Fighter) {
+      const isValidForThisFighter = (tile: Tile) => (!tile.isEdgeTile || (fighter.startingTile.id !== this.selectedPawn?.tile.id && fighter.startingTile.id == tile.id))
+      const isWithinDistance = (tile: Tile) => Math.abs(tile.row - origin.row) + Math.abs(tile.col - origin.col) <= fighter.movementPoints
+
+      this.reachableTiles = useGameStore().static.tiles.filter(tile => {
+        return isWithinDistance(tile) && isValidForThisFighter(tile)
+      })
+    },
     resetReachableTiles() {
       this.reachableTiles = []
       this.reachableTilesKeyedById = {}
@@ -62,7 +70,12 @@ export const useBoardStore = defineStore('boardStore', {
       }
 
       this.resetReachableTiles()
-      this.calculateReachableTiles(tile, fighter)
+
+      if (fighter.player.isActive()) {
+        this.calculateReachableTiles(tile, fighter)
+      } else {
+        this.calculateTilesWithinDistance(tile, fighter)
+      }
     },
     deselectPawn() {
       this.selectedPawn = null
@@ -92,7 +105,7 @@ export const useBoardStore = defineStore('boardStore', {
       const gameStore = useGameStore()
       const attacker = this.selectedPawn?.fighter
 
-      if (!attacker || !defender) return
+      if (!defender || !attacker?.player.isActive()) return
 
       const damage = Math.max(0, attacker.attackPoints - defender.defensePoints)
 

@@ -2,7 +2,7 @@
   <transition :name="tile.isEnemy() && tile.isWithinAttackRange() ? 'fade' : 'fade-30'" appear>
     <div @click="moveSelectedPawn" class="p-2 z-20 bg-gray-200 grid group"
       :class="[tile.isEnemy() && tile.isWithinAttackRange() ? 'opacity-100' : 'opacity-30', selectedPlayerCanMove && 'cursor-pointer']"
-      :style="{ transitionDelay: `${(tile.numberOfStepsAway ?? 1) * 50}ms` }" :key="boardStore.selectedPawnId">
+      :style="{ transitionDelay: `${(tile.numberOfStepsAway ?? 0) * 50}ms` }" :key="boardStore.selectedPawnId">
       <div v-show="selectedPlayerCanMove"
         class="bg-white h-1/2 w-1/2 m-auto opacity-0 shadow-inner group-hover:opacity-40 rounded-full col-start-1 row-start-1" />
       <div v-show="tile.isEnemy() && tile.isWithinAttackRange()"
