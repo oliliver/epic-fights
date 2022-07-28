@@ -3,6 +3,8 @@ import { createPinia } from 'pinia'
 import { useStore } from './store'
 
 import './assets/index.css'
+import './assets/transitions.css'
+
 import App from './App.vue'
 
 const pinia = createPinia()

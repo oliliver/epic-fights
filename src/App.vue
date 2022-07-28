@@ -40,7 +40,9 @@
               height: gridSize,
               width: gridSize
             }">
-            <ReachableTileOverlay v-for="tile in boardStore.reachableTiles" :tile="tile"
+            <TileOverlayActivePlayer v-if="selectedPlayer?.isActive()" v-for="tile in boardStore.reachableTiles"
+              :tile="tile" :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
+            <TileOverlayInactivePlayer v-else v-for="tile in boardStore.reachableTiles"
               :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
             <BoardTile v-for="tile in gameStore.static.tiles" :tile="tile"
               :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
@@ -69,7 +71,8 @@ import { useWindowSize } from '@vueuse/core'
 import constants from "./constants";
 import BoardTile from './components/BoardTile.vue'
 import FighterInfo from './components/FighterInfo.vue'
-import ReachableTileOverlay from './components/ReachableTileOverlay.vue';
+import TileOverlayActivePlayer from './components/TileOverlayActivePlayer.vue';
+import TileOverlayInactivePlayer from './components/TileOverlayInactivePlayer.vue';
 import Title from "./components/Title.vue";
 import GameMenu from './components/Menues/GameMenu.vue';
 import { useStore, useGameStore, useBoardStore } from './store'
@@ -113,7 +116,8 @@ const windowSize = useWindowSize()
 
 const gridSize = computed(() => `${Math.ceil(Math.min(windowSize.height.value * 0.7, windowSize.width.value * 0.95))}px`)
 
-const activePlayer = computed(() => gameStore.players.find(p => p.id == gameStore.activePlayer.id))
+const activePlayer = computed(() => gameStore.players.find(p => p.id == boardStore.activePlayerId))
+const selectedPlayer = computed(() => gameStore.players.find(p => p.id == boardStore.selectedPlayerId))
 
 function nextTurn() {
   gameStore.nextTurn()
