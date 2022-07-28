@@ -38,9 +38,10 @@
         <span class="-translate-y-px">&plus;</span><span> Add Player</span>
       </button>
     </div>
-    <button :disabled="!allPlayersHaveAtLeastOneFighter" class="font-[bangers] mt-2 btn-cyan" @click="startGame">
+    <BaseButton :disabled="!allPlayersHaveAtLeastOneFighter" class="font-[bangers] mt-2 inverted"
+      :color="constants.COLORS.amber[500]" @click="startGame">
       Start!
-    </button>
+    </BaseButton>
   </div>
 </template>
 
@@ -53,6 +54,8 @@ import Fighter from "../../models/Fighter";
 import { FighterInPool } from "../../store/types";
 import { getFighterOnTile } from "../../store/helpers";
 import { useStore, useGameStore } from '../../store'
+import BaseButton from "../BaseButton.vue";
+import constants from '../../constants'
 
 const store = useStore()
 const gameStore = useGameStore()
@@ -151,8 +154,8 @@ function selectFighter(player: PlayerClass, fighterInPool: FighterInPool) {
 const allPlayersHaveAtLeastOneFighter = computed(() => !!chosenPlayers.value.every(p => p.fighters.length))
 
 function startGame() {
-  gameStore.players.push(...chosenPlayers.value)
+  gameStore.players = [...chosenPlayers.value]
   gameStore.startGame()
-  store.activeMenu = null
+  store.setActiveMenu(null)
 }
 </script>

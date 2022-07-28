@@ -3,46 +3,59 @@
   <transition name="fade" mode="out-in" appear>
     <GameMenu v-if="store.initialized && store.activeMenu !== null" class="absolute inset-0 z-50" />
   </transition>
-  <label for="showSplashScreen"
-    class="absolute right-2 top-0 flex gap-2 select-none cursor-pointer text-gray-700 hover:text-gray-900">
-    <input id="showSplashScreen" type="checkbox" v-model="showSplashScreen" />
-    <span>Splashscreen</span>
-  </label>
-  <Title class="opacity-0 mx-auto" />
-  <Title class="absolute left-1/2 -translate-x-1/2 transition-[margin] delay-[1s] duration-[2s]"
-    :class="[!isMounted && showSplashScreen && 'mt-[40vh]']" />
-  <div class="flex-1 flex flex-col items-center justify-center py-2">
-    <p class="font-semibold leading-snug text-amber-500">Turn {{ gameStore.currentTurn }}</p>
-    <p class="font-semibold leading-snug" :style="{ color: activePlayer?.colorValue() }">{{ activePlayer?.name }}</p>
+  <div class="h-screen overflow-y-auto flex flex-col relative">
+
+    <label for="showSplashScreen"
+      class="absolute right-2 top-0 flex gap-2 select-none cursor-pointer text-gray-700 hover:text-gray-900">
+      <input id="showSplashScreen" type="checkbox" v-model="showSplashScreen" />
+      <span>Splashscreen</span>
+    </label>
+    <Title class="opacity-0 mx-auto" />
+    <Title class="absolute left-1/2 -translate-x-1/2 transition-[margin]"
+      :class="[!isMounted && showSplashScreen && 'mt-[40vh]']" :style="{
+        transitionDelay: `${animationDuration * (1 / 3)}ms`,
+        transitionDuration: `${animationDuration * (2 / 3)}ms`,
+      }" />
+    <transition name="fade" mode="out-in" appear>
+      <div v-if="isAnimated" class="flex flex-col flex-1">
+        <div class="flex-1 flex flex-col items-center justify-center py-2">
+          <p class="font-semibold leading-snug text-amber-500">Turn {{ gameStore.currentTurn }}</p>
+          <p class="font-semibold leading-snug" :style="{ color: activePlayer?.colorValue() }">{{ activePlayer?.name }}
+          </p>
+        </div>
+        <div
+          class="xl:w-full flex flex-col justify-start xl:grid mx-auto xl:p-10 gap-4 items-stretch bg-white transition-opacity duration-[.75s] ease-linear"
+          :class="[isAnimated ? 'opacity-100' : 'opacity-0', `w-[${gridSize}]`]" :style="{
+            gridTemplateColumns: '1fr min-content 1fr',
+            gridTemplateRows: gridSize,
+          }">
+          <div v-if="store.initialized" id="board-grid"
+            class="w-full flex-none col-start-2 grid gap-1 bg-gray-900 p-4 rounded-md mx-auto" :style="{
+              gridTemplateColumns: `repeat(${constants.GRID_WIDTH}, 1fr)`,
+              gridTemplateRows: `repeat(${constants.GRID_HEIGHT}, 1fr)`,
+              height: gridSize,
+              width: gridSize
+            }">
+            <ReachableTileOverlay v-for="tile in boardStore.reachableTiles" :tile="tile"
+              :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
+            <BoardTile v-for="tile in gameStore.static.tiles" :tile="tile"
+              :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
+          </div>
+        </div>
+        <div class="flex py-4">
+          <BaseButton :disabled="nextTurnButtonDisabled" class="m-auto w-64 inverted"
+            :color="activePlayer?.colorValue() || 'gray'" @click="nextTurn">
+            End Turn
+          </BaseButton>
+        </div>
+        <div class="row-start-1 col-start-1 grid grid-cols-2 xl:grid-cols-1 gap-4 max-w-full">
+          <FighterInfo v-for="i in 4" :fighter="fighterData[i as 1 | 2 | 3 | 4]" :key="i" class="flex-1 w-full" />
+        </div>
+        <div class="flex-1"></div>
+      </div>
+    </transition>
+
   </div>
-  <div
-    class="xl:w-full flex flex-col justify-start xl:grid mx-auto xl:p-10 gap-4 items-stretch bg-white transition-opacity duration-[.75s] delay-[3s] ease-linear"
-    :class="[isMounted || !showSplashScreen ? 'opacity-100' : 'opacity-0', `w-[${gridSize}]`]" :style="{
-      gridTemplateColumns: '1fr min-content 1fr',
-      gridTemplateRows: gridSize,
-    }">
-    <div v-if="store.initialized" id="board-grid"
-      class="w-full flex-none col-start-2 grid gap-1 bg-gray-900 p-4 rounded-md mx-auto" :style="{
-        gridTemplateColumns: `repeat(${constants.GRID_WIDTH}, 1fr)`,
-        gridTemplateRows: `repeat(${constants.GRID_HEIGHT}, 1fr)`,
-        height: gridSize,
-        width: gridSize
-      }">
-      <ReachableTileOverlay v-for="tile in boardStore.reachableTiles" :tile="tile"
-        :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
-      <BoardTile v-for="tile in gameStore.static.tiles" :tile="tile"
-        :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
-    </div>
-  </div>
-  <div class="flex py-4">
-    <button class="m-auto btn-cyan w-64" @click="gameStore.nextTurn()">
-      End Turn
-    </button>
-  </div>
-  <div class="row-start-1 col-start-1 grid grid-cols-2 xl:grid-cols-1 gap-4 max-w-full">
-    <FighterInfo v-for="i in 4" :fighter="fighterData[i as 1 | 2 | 3 | 4]" :key="i" class="flex-1 w-full" />
-  </div>
-  <div class="flex-1"></div>
 </template>
 
 <script setup lang="ts">
@@ -56,6 +69,7 @@ import ReachableTileOverlay from './components/ReachableTileOverlay.vue';
 import Title from "./components/Title.vue";
 import GameMenu from './components/Menues/GameMenu.vue';
 import { useStore, useGameStore, useBoardStore } from './store'
+import BaseButton from './components/BaseButton.vue';
 
 const boardStore = useBoardStore()
 const gameStore = useGameStore()
@@ -66,20 +80,21 @@ const showGameMenuOnEsc = (event: KeyboardEvent) => {
   }
 }
 
+const animationDuration = 3000
 const showSplashScreen = useStorage('showSplashScreen', true)
 const isMounted = ref(false)
+const isAnimated = ref(false)
+const nextTurnButtonDisabled = ref(false)
 
 onMounted(() => {
   setTimeout(() => {
     isMounted.value = true
-    if (!showSplashScreen.value) {
-      store.setActiveMenu('MAIN_MENU')
-    }
   }, 0)
 
   setTimeout(() => {
     store.setActiveMenu('MAIN_MENU')
-  }, 3000)
+    isAnimated.value = true
+  }, showSplashScreen.value ? animationDuration : 0)
 
   document.addEventListener('keydown', showGameMenuOnEsc)
 })
@@ -94,6 +109,14 @@ const windowSize = useWindowSize()
 const gridSize = computed(() => `${Math.ceil(Math.min(windowSize.height.value * 0.7, windowSize.width.value * 0.95))}px`)
 
 const activePlayer = computed(() => gameStore.players.find(p => p.id == gameStore.activePlayer.id))
+
+function nextTurn() {
+  gameStore.nextTurn()
+  nextTurnButtonDisabled.value = true
+  setTimeout(() => {
+    nextTurnButtonDisabled.value = false
+  }, 1000);
+}
 </script>
 
 <style>
