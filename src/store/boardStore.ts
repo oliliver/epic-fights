@@ -95,11 +95,15 @@ export const useBoardStore = defineStore('boardStore', {
       gameStore.spendAction(PlayerAction.movement)
     },
     applyDamage(defender: Fighter, damage: number) {
+      const gameStore = useGameStore()
+
       defender.healthPoints -= damage
 
       if (defender.healthPoints <= 0) {
         defender.isAlive = false
       }
+
+      gameStore.evaluateWinCondition()
     },
     attackPawn(defender: Fighter) {
       const gameStore = useGameStore()

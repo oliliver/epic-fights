@@ -11,18 +11,18 @@
           </button>
         </div>
         <div class="grid grid-cols-4 gap-2">
-          <div v-for="tile in player.tiles" class="h-[12vw] w-[12vw] flex relative transition-colors cursor-pointer"
+          <div v-for="tile in player.tiles" class="flex relative transition-colors cursor-pointer"
             :class="selectedTiles[player.id] == tile.id && 'shadow-inner'"
-            :style="{ backgroundColor: selectedTiles[player.id] == tile.id ? player.colorValue(300) : player.colorValue() }"
+            :style="{ height: tileSize, width: tileSize, backgroundColor: selectedTiles[player.id] == tile.id ? player.colorValue(300) : player.colorValue() }"
             @click="selectTile(player, tile)">
             <FighterToken class="m-auto" v-if="getFighter(player, tile)" :fighter="getFighter(player, tile)" />
           </div>
         </div>
         <hr class="border-gray-400" />
         <div class="grid grid-cols-4 gap-2">
-          <div v-for="fighterInPool in availableFighters" class="h-[12vw] w-[12vw] flex bg-white bg-opacity-50 relative"
+          <div v-for="fighterInPool in availableFighters" class="flex bg-white bg-opacity-50 relative"
             :class="numberOfFightersLeft(player, fighterInPool) === 0 ? 'opacity-40 cursor-default' : 'cursor-pointer'"
-            @click="selectFighter(player, fighterInPool)">
+            @click="selectFighter(player, fighterInPool)" :style="{ height: tileSize, width: tileSize }">
             <p class="absolute right-0 bottom-0 leading-none m-1 font-bold text-cyan-500 text-clamp-sm">x{{
                 numberOfFightersLeft(player, fighterInPool)
             }}
@@ -56,6 +56,7 @@ import { useStore, useGameStore } from '../../store'
 import BaseButton from "../BaseButton.vue";
 import constants from '../../constants'
 import BaseMenu from "./BaseMenu.vue";
+import { useWindowSize } from "@vueuse/core";
 
 const store = useStore()
 const gameStore = useGameStore()
@@ -158,4 +159,9 @@ function startGame() {
   gameStore.startGame()
   store.setActiveMenu(MenuName.null)
 }
+
+const windowSize = useWindowSize()
+
+const minScreenSize = computed(() => Math.min(windowSize.height.value, windowSize.width.value))
+const tileSize = computed(() => `${Math.round(minScreenSize.value * 0.12)}px`)
 </script>

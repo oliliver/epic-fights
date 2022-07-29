@@ -1,20 +1,21 @@
 <template>
-  <div class="flex items-center gap-2 bg-gray-200 p-2">
+  <div class="flex items-center gap-2 p-2 rounded"
+    :style="{ backgroundColor: selectedFighterIsOfThisType ? activePlayerColor : '#ddd' }">
     <p class="h-full text-clamp-md">
       {{ fighter.tier }}.
     </p>
-    <div class="bg-gray-200 flex flex-wrap gap-2 xl:gap-6 justify-center xl:justify-start xl:pl-6 text-clamp-sm">
+    <div class="flex flex-wrap gap-4 xl:gap-6 justify-center xl:justify-start xl:pl-6 text-clamp-sm">
       <div>
-        <p class="flex justify-between">
+        <p class="flex gap-4 justify-between">
           <span>HP:</span> <span>{{ constants.DEFAULT_HP }}</span>
         </p>
-        <p class="flex justify-between">
+        <p class="flex gap-4 justify-between">
           <span>Movement:</span> <span>{{ fighter.movementPoints }}</span>
         </p>
-        <p class="flex justify-between">
+        <p class="flex gap-4 justify-between">
           <span>Attack:</span> <span>{{ fighter.attackPoints }}</span>
         </p>
-        <p class="flex justify-between">
+        <p class="flex gap-4 justify-between">
           <span>Defense:</span> <span>{{ fighter.defensePoints }}</span>
         </p>
       </div>
@@ -42,10 +43,15 @@
 
 <script setup lang="ts">
 import constants from "../constants";
+import { useBoardStore } from "../store";
+import { computed } from "@vue/reactivity";
 import { FighterData } from '../models/types';
 
 const props = defineProps<{ fighter: FighterData }>()
 
 const abilities = Object.values(props.fighter.abilities ?? {})
+
+const selectedFighterIsOfThisType = computed(() => useBoardStore().selectedPawn?.fighter.fighterId == props.fighter.fighterId)
+const activePlayerColor = computed(() => useBoardStore().selectedPawn?.fighter.player.colorValue(300))
 
 </script>

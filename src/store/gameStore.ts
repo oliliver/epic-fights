@@ -46,10 +46,18 @@ export const useGameStore = defineStore('gameStore', {
             tiles: [],
           },
         ]
-      }
+      },
+      winner: null,
     }
   },
   actions: {
+    evaluateWinCondition() {
+      const playersWithFightersAlive = this.players.filter(p => p.fighters.some(f => f.isAlive))
+
+      if (playersWithFightersAlive.length == 1) {
+        this.winner = playersWithFightersAlive[0]
+      }
+    },
     initializeGameStore() {
       const { GRID_HEIGHT, GRID_WIDTH } = constants
 
@@ -84,6 +92,9 @@ export const useGameStore = defineStore('gameStore', {
       Object.keys(this.activePlayer.availableActions).forEach((action) => {
         this.activePlayer.availableActions[action as PlayerAction].isUsed = false
       })
+    },
+    setupNewGame() {
+      this.winner = null
     },
     spendAction(action: PlayerAction) {
       this.activePlayer.availableActions[action].isUsed = true

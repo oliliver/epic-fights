@@ -76,4 +76,5 @@ export type GameState = {
     tiles: Tile[]
     playerSlots: PlayerSlot[]
   }
+  winner: PlayerClass | null
 }

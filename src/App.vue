@@ -14,6 +14,13 @@
           d="M12 10C11.4696 10 10.9609 10.2107 10.5858 10.5858C10.2107 10.9609 10 11.4696 10 12C10 12.5304 10.2107 13.0391 10.5858 13.4142C10.9609 13.7893 11.4696 14 12 14C12.5304 14 13.0391 13.7893 13.4142 13.4142C13.7893 13.0391 14 12.5304 14 12C14 11.4696 13.7893 10.9609 13.4142 10.5858C13.0391 10.2107 12.5304 10 12 10ZM9.17157 9.17157C9.92172 8.42143 10.9391 8 12 8C13.0609 8 14.0783 8.42143 14.8284 9.17157C15.5786 9.92172 16 10.9391 16 12C16 13.0609 15.5786 14.0783 14.8284 14.8284C14.0783 15.5786 13.0609 16 12 16C10.9391 16 9.92172 15.5786 9.17157 14.8284C8.42143 14.0783 8 13.0609 8 12C8 10.9391 8.42143 9.92172 9.17157 9.17157Z" />
       </svg>
     </div>
+    <div v-if="gameStore.winner"
+      class="absolute top-[10%] left-1/2 -translate-x-1/2 font-[Bangers] z-50 bg-white p-6 rounded shadow-2xl"
+      :style="{ color: gameStore.winner.colorValue() }">
+      <p>{{ gameStore.winner.name }} wins the game!</p>
+      <BaseButton class="w-full mt-10" @click="store.setActiveMenu(MenuName.NEW_GAME)">
+        New Game</BaseButton>
+    </div>
     <Title class="opacity-0 mx-auto" />
     <Title class="absolute left-1/2 -translate-x-1/2 transition-[margin]"
       :class="[!isMounted && store.settings.useSplashScreen && 'mt-[40vh]']" :style="{
@@ -21,15 +28,15 @@
         transitionDuration: `${animationDuration * (2 / 3)}ms`,
       }" />
     <transition name="fade" mode="out-in" appear>
-      <div v-if="isAnimated" class="flex flex-col flex-1">
+      <div v-if="isAnimated" class="flex flex-col flex-1 pb-4">
         <div class="flex-1 flex flex-col items-center justify-center py-2">
           <p class="font-semibold leading-snug text-amber-500">Turn {{ gameStore.currentTurn }}</p>
           <p class="font-semibold leading-snug" :style="{ color: activePlayer?.colorValue() }">{{ activePlayer?.name }}
           </p>
         </div>
         <div
-          class="xl:w-full flex flex-col justify-start xl:grid mx-auto xl:p-10 gap-4 items-stretch bg-white transition-opacity duration-[.75s] ease-linear"
-          :class="[isAnimated ? 'opacity-100' : 'opacity-0', `w-[${gridSize}]`]" :style="{
+          class="xl:w-full flex flex-col justify-start xl:grid mx-auto gap-4 items-stretch bg-white transition-opacity duration-[.75s] ease-linear"
+          :class="[isAnimated ? 'opacity-100' : 'opacity-0']" :style="{
             gridTemplateColumns: '1fr min-content 1fr',
             gridTemplateRows: gridSize,
           }">
@@ -49,12 +56,17 @@
           </div>
         </div>
         <div class="flex py-4">
-          <BaseButton :disabled="nextTurnButtonDisabled" class="m-auto w-64 inverted"
+          <BaseButton v-if="gameStore.winner || !gameStore.players.length"
+            class="font-[Oswald] font-normal m-auto w-64 inverted" :color="constants.COLORS.amber[500]"
+            @click="store.setActiveMenu(MenuName.NEW_GAME)">
+            New Game
+          </BaseButton>
+          <BaseButton v-else :disabled="nextTurnButtonDisabled" class="font-[Oswald] font-normal m-auto w-64 inverted"
             :color="activePlayer?.colorValue() || 'gray'" @click="nextTurn">
             End Turn
           </BaseButton>
         </div>
-        <div class="row-start-1 col-start-1 grid grid-cols-2 xl:grid-cols-1 gap-4 max-w-full">
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 px-4">
           <FighterInfo v-for="i in 4" :fighter="fighterData[i as 1 | 2 | 3 | 4]" :key="i" class="flex-1 w-full" />
         </div>
         <div class="flex-1"></div>

@@ -35,6 +35,11 @@ export const useStore = defineStore('main', {
     },
     setActiveMenu(newActiveMenu: MenuName) {
       this.activeMenu = newActiveMenu
+
+      if (newActiveMenu == MenuName.NEW_GAME) {
+        const gameStore = useGameStore()
+        gameStore.setupNewGame()
+      }
     },
   },
 })
