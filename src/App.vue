@@ -29,7 +29,8 @@
       }" />
     <transition name="fade" mode="out-in" appear>
       <div v-if="isAnimated" class="flex flex-col flex-1 pb-4">
-        <div class="flex-1 flex flex-col items-center justify-center py-2">
+        <div class="flex-1 flex flex-col items-center justify-center transition-opacity py-2"
+          :class="gameStore.currentTurn ? 'opacity-100' : 'opacity-0'">
           <p class="font-semibold leading-snug text-amber-500">Turn {{ gameStore.currentTurn }}</p>
           <p class="font-semibold leading-snug" :style="{ color: activePlayer?.colorValue() }">{{ activePlayer?.name }}
           </p>

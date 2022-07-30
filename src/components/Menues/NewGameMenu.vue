@@ -4,7 +4,7 @@
       <div v-for="(player, i) in chosenPlayers" class="p-2 border flex flex-col gap-2 border-gray-400 rounded"
         :style="{ backgroundColor: player.colorValue(200) }">
         <div class="flex justify-between">
-          <h2 class="text-clamp-md">Player {{ i + 1 }}</h2>
+          <input v-model="player.name" class="bg-transparent border-b" :style="{ borderColor: player.colorValue() }">
           <button v-if="i > 1" @click="removePlayer(player)"
             class="px-1 py-0 leading-none -mx-1 -mt-1 hover:bg-white rounded hover:bg-opacity-50">
             <div>&times;</div>
