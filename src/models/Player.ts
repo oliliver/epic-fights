@@ -41,13 +41,13 @@ export default class Player {
 
   public canPerformAction(actionName: PlayerAction) {
     const gameStore = useGameStore()
-    const action = gameStore.activePlayer.availableActions[actionName]
+    const action = gameStore.activePlayerData.availableActions[actionName]
 
     return this.isActive() && !action.isUsed && action.isAllowed()
   }
 
   public isActive() {
-    return useGameStore().activePlayer.id == this.id
+    return useGameStore().activePlayer?.id == this.id
   }
 
   public addFighter(fighterModel: Fighter, tile: Tile) {

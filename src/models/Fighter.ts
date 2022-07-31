@@ -2,8 +2,11 @@ import Ability from './Ability'
 import constants from '../constants'
 import Tile, { neutralTile } from './Tile'
 import { PlayerClass, neutralPlayer } from './Player'
-import { FighterData, GridPosition } from './types'
+import { FighterData } from './types'
 import { nanoid } from 'nanoid'
+import { useGameStore } from '../store'
+import { PlayerAction } from '../store/types'
+import { getOrthogonallyDiagonalTiles } from '../store/helpers'
 
 export const fighterData: { [key: number | string]: FighterData } = {
   1: {
@@ -51,7 +54,7 @@ export default class Fighter {
   public healthPoints: number
   public isAlive = true
   public player: PlayerClass
-  public position: GridPosition
+  public currentTile: Tile
 
   readonly abilities: { [name: string]: Ability }
   readonly attackPoints: number
@@ -77,19 +80,46 @@ export default class Fighter {
     this.id = nanoid()
     this.movementPoints = initialData.movementPoints
     this.player = initialData.player ?? neutralPlayer
-    this.position = { row: initialData.startingTile?.row ?? -1, col: initialData.startingTile?.col ?? -1 }
+    this.currentTile = neutralTile
     this.startingTile = initialData.startingTile ?? neutralTile
     this.range = initialData.range
     this.tier = initialData.tier
+
+    this.moveToTile(this.startingTile, { isAnAction: false })
+  }
+
+  public moveToTile(targetTile: Tile, options: { isAnAction: boolean } = { isAnAction: true }) {
+    if (options.isAnAction && !this.player.canPerformAction(PlayerAction.movement)) return
+
+    try {
+      targetTile.addFighter(this)
+      this.currentTile.removeFighter(this)
+      this.currentTile = targetTile
+
+      const gameStore = useGameStore()
+
+      if (options.isAnAction) {
+        gameStore.spendAction(PlayerAction.movement)
+      }
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   /**
-   * isOnTile
-   * @param tile: Tile
+   * hasEnemyWithinAttackRange
    * @returns boolean
    */
-  public isOnTile(tile: Tile) {
-    return tile.row == this.position.row && tile.col == this.position.col
+  public hasEnemyWithinAttackRange() {
+    return getOrthogonallyDiagonalTiles(this.currentTile)
+      .some(t => t.fightersOnTile
+        .some(f => f.player.id !== this.player.id && f.isAlive)
+      )
+  }
+
+  public canMove() {
+    return getOrthogonallyDiagonalTiles(this.currentTile)
+      .some(t => !t.isOccupied() && t.isValidForFighter(this))
   }
 }
 

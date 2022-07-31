@@ -15,7 +15,7 @@
             :class="selectedTiles[player.id] == tile.id && 'shadow-inner'"
             :style="{ height: tileSize, width: tileSize, backgroundColor: selectedTiles[player.id] == tile.id ? player.colorValue(300) : player.colorValue() }"
             @click="selectTile(player, tile)">
-            <FighterToken class="m-auto" v-if="getFighter(player, tile)" :fighter="getFighter(player, tile)" />
+            <FighterToken class="m-auto" v-if="getFighter(tile)" :fighter="getFighter(tile)" />
           </div>
         </div>
         <hr class="border-gray-400" />
@@ -51,7 +51,6 @@ import FighterToken from "../FighterToken.vue";
 import Tile from "../../models/Tile";
 import Fighter from "../../models/Fighter";
 import { FighterInPool, MenuName } from "../../store/types";
-import { getFighterOnTile } from "../../store/helpers";
 import { useStore, useGameStore } from '../../store'
 import BaseButton from "../BaseButton.vue";
 import constants from '../../constants'
@@ -86,8 +85,8 @@ function removePlayer(player: PlayerClass) {
   }
 }
 
-function getFighter(player: PlayerClass, tile: Tile) {
-  return player.fighters.find(f => f.isOnTile(tile)) as Fighter
+function getFighter(tile: Tile) {
+  return tile.fightersOnTile.find(f => f.isAlive) as Fighter
 }
 
 const availableFighters = gameStore.static.fighterPool
@@ -100,7 +99,7 @@ const numberOfFightersLeft = (player: PlayerClass, fighterData: FighterInPool) =
 const selectedTiles = reactive<{ [playerId: string]: number | null }>({})
 function selectTile(player: PlayerClass, targetTile: Tile) {
   const currentlySelectedTile = player.tiles.find(t => t.id == selectedTiles[player.id])
-  const fighterOnCurrentlySelectedTile = currentlySelectedTile ? getFighterOnTile([player], currentlySelectedTile) : null
+  const fighterOnCurrentlySelectedTile = currentlySelectedTile?.fightersOnTile.find(f => f.isAlive) ?? null
   const targetTileIsTheCurrentlySelected = selectedTiles[player.id] === targetTile.id
 
   if (!currentlySelectedTile) {
@@ -127,7 +126,7 @@ function selectTile(player: PlayerClass, targetTile: Tile) {
   if (!targetTileIsTheCurrentlySelected && fighterOnCurrentlySelectedTile) {
     player.removeFighter(fighterOnCurrentlySelectedTile)
 
-    const fighterOnTargetTile = getFighterOnTile([player], targetTile)
+    const fighterOnTargetTile = targetTile?.fightersOnTile.find(f => f.isAlive) ?? null
 
     if (fighterOnTargetTile) {
       player.removeFighter(fighterOnTargetTile)
@@ -143,7 +142,9 @@ function selectTile(player: PlayerClass, targetTile: Tile) {
 function selectFighter(player: PlayerClass, fighterInPool: FighterInPool) {
   if (numberOfFightersLeft(player, fighterInPool) <= 0) return
 
-  const targetTile = player.tiles.find(tile => selectedTiles[player.id] ? tile.id == selectedTiles[player.id] : !getFighterOnTile([player], tile))
+  const tileHasFighter = (tile: Tile) => tile.fightersOnTile.some(f => f.isAlive)
+
+  const targetTile = player.tiles.find(tile => selectedTiles[player.id] ? tile.id == selectedTiles[player.id] : !tileHasFighter(tile))
 
   if (targetTile) {
     player.addFighter(fighterInPool.fighter, targetTile)

@@ -23,15 +23,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import constants from '../constants';
 import Fighter from '../models/Fighter';
-import Tile from '../models/Tile';
+import { computed } from 'vue';
 import { useBoardStore } from "../store";
 
 const props = defineProps<{
   fighter: Fighter
-  tile: Tile
 }>()
 
 const boardStore = useBoardStore()
@@ -40,7 +38,7 @@ function selectPawn() {
   if (boardStore.selectedPawnId == props.fighter.id) {
     boardStore.deselectPawn()
   } else {
-    boardStore.selectPawn(props.fighter, props.tile)
+    boardStore.selectPawn(props.fighter)
   }
 }
 
@@ -49,4 +47,6 @@ function attack() {
 }
 
 const isSelected = computed(() => boardStore.selectedPawnId == props.fighter.id)
+
+const tile = computed(() => props.fighter.currentTile)
 </script>

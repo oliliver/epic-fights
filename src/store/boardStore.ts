@@ -1,5 +1,5 @@
 import { defineStore } from "pinia"
-import { getFighterOnTile, getOrthogonallyDiagonalTiles, getTileIdFromPosition, isWithinGrid, isWithinRangeOrthogonally } from './helpers'
+import { getOrthogonallyDiagonalTiles, isWithinGrid, isWithinRangeOrthogonally } from './helpers'
 import { ReachableTile } from '../models/types'
 import Fighter from '../models/Fighter'
 import Tile from '../models/Tile'
@@ -15,8 +15,8 @@ export const useBoardStore = defineStore('boardStore', {
     }
   },
   actions: {
-    calculateReachableTiles(origin: Tile, fighter: Fighter) {
-      let edgeTiles = [origin]
+    calculateReachableTiles(fighter: Fighter) {
+      let edgeTiles = [fighter.currentTile]
 
       // calculate which tiles are reachable (via an unblocked path)
       for (let i = 0; i < fighter.movementPoints; i++) {
@@ -25,12 +25,11 @@ export const useBoardStore = defineStore('boardStore', {
         edgeTiles.forEach(edgeTile => {
           const orthogonallyDiagonalTiles = getOrthogonallyDiagonalTiles(edgeTile)
           const isAlreadyAdded = (tile: Tile) => !!this.reachableTilesKeyedById[tile.id]
-          const isValidForThisFighter = (tile: Tile) => (!tile.isEdgeTile || (fighter.startingTile.id !== this.selectedPawn?.tile.id && fighter.startingTile.id == tile.id))
 
           const accessibleTiles = orthogonallyDiagonalTiles.filter(tile =>
             isWithinRangeOrthogonally(tile, edgeTile, 1) &&
             !isAlreadyAdded(tile) &&
-            isValidForThisFighter(tile) &&
+            tile.isValidForFighter(fighter) &&
             isWithinGrid(tile)
           )
 
@@ -49,7 +48,9 @@ export const useBoardStore = defineStore('boardStore', {
         edgeTiles = newEdgeTiles
       }
     },
-    calculateTilesWithinDistance(origin: Tile, fighter: Fighter) {
+    calculateTilesWithinDistance(fighter: Fighter) {
+      const origin = fighter.currentTile
+
       const isValidForThisFighter = (tile: Tile) => (!tile.isEdgeTile || (fighter.startingTile.id !== this.selectedPawn?.tile.id && fighter.startingTile.id == tile.id))
       const isWithinDistance = (tile: Tile) => Math.abs(tile.row - origin.row) + Math.abs(tile.col - origin.col) <= fighter.movementPoints
 
@@ -61,38 +62,24 @@ export const useBoardStore = defineStore('boardStore', {
       this.reachableTiles = []
       this.reachableTilesKeyedById = {}
     },
-    selectPawn(fighter: Fighter, tile: Tile) {
-      if (!fighter || !tile) return
-
+    selectPawn(fighter: Fighter) {
       this.selectedPawn = {
         fighter,
-        tile,
+        tile: fighter.currentTile,
+        player: fighter.player,
       }
 
       this.resetReachableTiles()
 
       if (fighter.player.isActive()) {
-        this.calculateReachableTiles(tile, fighter)
+        this.calculateReachableTiles(fighter)
       } else {
-        this.calculateTilesWithinDistance(tile, fighter)
+        this.calculateTilesWithinDistance(fighter)
       }
     },
     deselectPawn() {
       this.selectedPawn = null
       this.resetReachableTiles()
-    },
-    moveSelectedPawn(targetTile: Tile) {
-      const gameStore = useGameStore()
-
-      const targetFighter = this.selectedPawn?.fighter
-      const { col, row } = targetTile
-
-      if (!targetFighter?.player.canPerformAction(PlayerAction.movement)) return
-
-      [targetFighter.position.col, targetFighter.position.row] = [col, row]
-      this.deselectPawn()
-
-      gameStore.spendAction(PlayerAction.movement)
     },
     applyDamage(defender: Fighter, damage: number) {
       const gameStore = useGameStore()
@@ -116,13 +103,31 @@ export const useBoardStore = defineStore('boardStore', {
       this.applyDamage(defender, damage)
 
       if (!defender.isAlive && attacker.range == 1) {
-        const defenderTile = gameStore.static.tiles[getTileIdFromPosition(defender.position)]
-        this.moveSelectedPawn(defenderTile)
+        const defenderTile = gameStore.static.tiles[defender.currentTile.id]
+        attacker.moveToTile(defenderTile)
       }
 
       this.deselectPawn()
       gameStore.spendAction(PlayerAction.attack)
     },
+    moveSelectedPawn(targetTile: Tile) {
+      const fighter = this.selectedPawn?.fighter
+
+      if (!fighter) return
+
+      try {
+        fighter.moveToTile(targetTile)
+
+        if (fighter.hasEnemyWithinAttackRange()) {
+          this.resetReachableTiles()
+          this.calculateReachableTiles(fighter)
+        } else {
+          this.deselectPawn()
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
   },
   getters: {
     fightersKeyedByTileId: () => {
@@ -130,11 +135,11 @@ export const useBoardStore = defineStore('boardStore', {
 
       return gameStore.static.tiles.reduce((acc: { [tileId: string]: Fighter | undefined }, tile) => ({
         ...acc,
-        [String(tile.id)]: getFighterOnTile(gameStore.players, tile)
+        [String(tile.id)]: tile.fightersOnTile.find(f => f.isAlive)
       }), {})
     },
     selectedPawnId: state => state.selectedPawn?.fighter.id,
     selectedPlayerId: state => state.selectedPawn?.fighter.player.id,
-    activePlayerId: () => useGameStore().activePlayer.id,
+    activePlayerId: () => useGameStore().activePlayer?.id,
   }
 })

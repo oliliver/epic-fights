@@ -22,16 +22,16 @@
         New Game</BaseButton>
     </div>
     <Title class="opacity-0 mx-auto" />
-    <Title class="absolute left-1/2 -translate-x-1/2 transition-[margin]"
-      :class="[!isMounted && store.settings.useSplashScreen && 'mt-[40vh]']" :style="{
+    <Title class="absolute left-[49.5vw] -translate-x-1/2 transition-[margin,transform]"
+      :class="[!isMounted && store.settings.useSplashScreen && 'mt-[35vh] scale-[2]']" :style="{
         transitionDelay: `${animationDuration * (1 / 3)}ms`,
         transitionDuration: `${animationDuration * (2 / 3)}ms`,
       }" />
     <transition name="fade" mode="out-in" appear>
       <div v-if="isAnimated" class="flex flex-col flex-1 pb-4">
         <div class="flex-1 flex flex-col items-center justify-center transition-opacity py-2"
-          :class="gameStore.currentTurn ? 'opacity-100' : 'opacity-0'">
-          <p class="font-semibold leading-snug text-amber-500">Turn {{ gameStore.currentTurn }}</p>
+          :class="gameStore.currentTurn.number > 0 ? 'opacity-100' : 'opacity-0'">
+          <p class="font-semibold leading-snug text-amber-500">Turn {{ gameStore.currentTurn.number }}</p>
           <p class="font-semibold leading-snug" :style="{ color: activePlayer?.colorValue() }">{{ activePlayer?.name }}
           </p>
         </div>
@@ -48,12 +48,17 @@
               height: gridSize,
               width: gridSize
             }">
-            <TileOverlayActivePlayer v-if="selectedPlayer?.isActive()" v-for="tile in boardStore.reachableTiles"
-              :tile="tile" :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
-            <TileOverlayInactivePlayer v-else v-for="tile in boardStore.reachableTiles"
-              :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
             <BoardTile v-for="tile in gameStore.static.tiles" :tile="tile"
               :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
+            <TileBackgroundOverlayActivePlayer v-if="selectedPlayer?.isActive()"
+              v-for="tile in boardStore.reachableTiles" :tile="tile"
+              :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
+            <TileBackgroundOverlayInactivePlayer v-else v-for="tile in boardStore.reachableTiles"
+              :style="{ gridColumnStart: tile.col, gridRowStart: tile.row }" />
+            <div v-for="fighter in allLivingFighters" class="flex flex-col h-full w-full z-20"
+              :style="{ gridColumnStart: fighter.currentTile.col, gridRowStart: fighter.currentTile.row }">
+              <FighterPawn :fighter="fighter" />
+            </div>
           </div>
         </div>
         <div class="flex py-4">
@@ -63,7 +68,7 @@
             New Game
           </BaseButton>
           <BaseButton v-else :disabled="nextTurnButtonDisabled" class="font-[Oswald] font-normal m-auto w-64 inverted"
-            :color="activePlayer?.colorValue() || 'gray'" @click="nextTurn">
+            :color="activePlayer?.colorValue() || 'gray'" @click="gameStore.nextTurn()">
             End Turn
           </BaseButton>
         </div>
@@ -84,8 +89,9 @@ import { useWindowSize } from '@vueuse/core'
 import constants from "./constants";
 import BoardTile from './components/BoardTile.vue'
 import FighterInfo from './components/FighterInfo.vue'
-import TileOverlayActivePlayer from './components/TileOverlayActivePlayer.vue';
-import TileOverlayInactivePlayer from './components/TileOverlayInactivePlayer.vue';
+import FighterPawn from './components/FighterPawn.vue'
+import TileBackgroundOverlayActivePlayer from './components/TileBackgroundOverlayActivePlayer.vue';
+import TileBackgroundOverlayInactivePlayer from './components/TileBackgroundOverlayInactivePlayer.vue';
 import Title from "./components/Title.vue";
 import GameMenu from './components/Menues/GameMenu.vue';
 import { useStore, useGameStore, useBoardStore } from './store'
@@ -98,14 +104,16 @@ const gameStore = useGameStore()
 const store = useStore()
 const showGameMenuOnEsc = (event: KeyboardEvent) => {
   if (event.key == 'Escape') {
-    store.setActiveMenu(store.activeMenu === MenuName.null ? MenuName.MAIN_MENU : MenuName.null)
+    store.setActiveMenu(
+      store.activeMenu === MenuName.null ? MenuName.MAIN_MENU : MenuName.null
+    )
   }
 }
 
 const animationDuration = 3000
 const isMounted = ref(false)
 const isAnimated = ref(false)
-const nextTurnButtonDisabled = ref(false)
+const nextTurnButtonDisabled = computed(() => gameStore.currentTurn.elapsedSeconds < 1)
 
 onMounted(() => {
   setTimeout(() => {
@@ -129,16 +137,10 @@ const windowSize = useWindowSize()
 
 const gridSize = computed(() => `${Math.ceil(Math.min(windowSize.height.value * 0.7, windowSize.width.value * 0.95))}px`)
 
-const activePlayer = computed(() => gameStore.players.find(p => p.id == boardStore.activePlayerId))
+const activePlayer = computed(() => gameStore.activePlayer)
 const selectedPlayer = computed(() => gameStore.players.find(p => p.id == boardStore.selectedPlayerId))
 
-function nextTurn() {
-  gameStore.nextTurn()
-  nextTurnButtonDisabled.value = true
-  setTimeout(() => {
-    nextTurnButtonDisabled.value = false
-  }, 1000);
-}
+const allLivingFighters = computed(() => gameStore.players.flatMap(p => p.fighters).filter(f => f.isAlive))
 </script>
 
 <style>

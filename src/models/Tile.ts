@@ -2,6 +2,7 @@ import { CSSProperties } from "vue";
 import { useBoardStore } from "../store";
 import constants from "../constants"
 import Fighter from "./Fighter";
+import { throwError } from "../store/helpers";
 
 const { GRID_HEIGHT, GRID_WIDTH } = constants
 
@@ -21,12 +22,15 @@ export default class Tile {
   public isOccupied: () => boolean
   public isAlly: () => boolean
   public isEnemy: () => boolean
+  public isValidForFighter: (fighter: Fighter) => boolean
+  public removeFighter: (fighter: Fighter) => void
+  public addFighter: (fighter: Fighter) => void
 
+  public fightersOnTile: Fighter[] = []
   public classes: string[] = []
   public styles: { [T in keyof CSSProperties]?: CSSProperties[T] } = {}
 
   constructor(id: number, row: number, col: number) {
-
     this.getFighter = function () {
       const boardStore = useBoardStore()
 
@@ -75,7 +79,27 @@ export default class Tile {
       this.classes = ['bg-gray-200']
     }
 
-    Object.seal(this)
+    this.isValidForFighter = function (fighter: Fighter) {
+      const boardStore = useBoardStore()
+
+      return !this.isEdgeTile || (fighter.startingTile.id !== boardStore.selectedPawn?.tile.id && fighter.startingTile.id == this.id)
+    }
+
+    this.addFighter = function (fighter: Fighter) {
+      if (fighter.isAlive && this.fightersOnTile.some(f => f.isAlive)) {
+        throwError("TILE_ALREADY_OCCUPIED", 'addFighter');
+      }
+
+      this.fightersOnTile.push(fighter)
+    }
+
+    this.removeFighter = function (fighter: Fighter) {
+      const indexOfFighter = this.fightersOnTile.findIndex(f => f.id == fighter.id)
+
+      if (indexOfFighter !== -1) {
+        this.fightersOnTile.splice(indexOfFighter, 1)
+      }
+    }
   }
 }
 

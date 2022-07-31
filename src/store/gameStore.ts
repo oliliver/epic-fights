@@ -1,28 +1,37 @@
-import { defineStore } from "pinia"
 import constants, { ColorName } from '../constants'
-import { Fighter1, Fighter2, Fighter3, Fighter4 } from '../models/Fighter'
-import { PlayerClass } from "../models/Player"
+import Player from "../models/Player"
 import Tile from '../models/Tile'
+import { defineStore } from "pinia"
+import { Fighter1, Fighter2, Fighter3, Fighter4 } from '../models/Fighter'
 import { GameState, PlayerAction } from "./types"
 import { useBoardStore } from ".";
+import { throwError } from './helpers'
+
+let currentTurnTimer: number
 
 export const useGameStore = defineStore('gameStore', {
   state(): GameState {
     return {
-      activePlayer: {
+      activePlayer: null,
+      activePlayerData: {
         id: null,
         availableActions: {
           movement: {
             isUsed: false,
-            isAllowed: () => !useGameStore().activePlayer.availableActions.attack.isUsed,
+            isAllowed: () => !useGameStore().activePlayerData.availableActions.attack.isUsed,
+            isPossible: () => !!useBoardStore().selectedPawn?.fighter.canMove(),
           },
           attack: {
             isUsed: false,
-            isAllowed: () => true
+            isAllowed: () => true,
+            isPossible: () => !!useGameStore().activePlayer?.fighters.some(f => f.isAlive && f.hasEnemyWithinAttackRange())
           }
         }
       },
-      currentTurn: 0,
+      currentTurn: {
+        number: 0,
+        elapsedSeconds: 0
+      },
       players: [],
       randomizedTurnOrderOffset: 0,
       static: {
@@ -76,31 +85,64 @@ export const useGameStore = defineStore('gameStore', {
 
       const fighters = [new Fighter1(), new Fighter2(), new Fighter3, new Fighter4()]
       fighters.forEach(f => this.static.fighterPool.push({ fighter: f, maxCount: 2 }))
+
+
+      if (this.players.length == 0) {
+        const [player1, player2] = [0, 1].map(
+          slotIndex => new Player({
+            tiles: this.static.playerSlots[slotIndex].tiles,
+            color: this.static.playerSlots[slotIndex].defaultColor, slotIndex
+          })
+        )
+
+          ;[player1, player2].forEach(player => {
+            player.addFighter(new Fighter4(), player.tiles[0])
+            player.assignTileColors()
+            this.players.push(player)
+            this.startGame()
+          })
+      }
     },
     nextTurn() {
-      this.currentTurn++
+      this.currentTurn.number++
+      this.currentTurn.elapsedSeconds = 0
 
-      const newActivePlayer = this.players.find(p => (p.slotIndex + 1) == (((this.currentTurn + this.randomizedTurnOrderOffset) % this.players.length) || this.players.length)) as PlayerClass
+      if (currentTurnTimer) {
+        clearInterval(currentTurnTimer)
+      }
 
-      this.activePlayer = { ...this.activePlayer, id: newActivePlayer.id }
+      currentTurnTimer = setInterval(() => this.currentTurn.elapsedSeconds++, 1000)
+
+      const newActivePlayer = this.players.find(
+        p => (p.slotIndex + 1) == (
+          ((this.currentTurn.number + this.randomizedTurnOrderOffset) % this.players.length) || this.players.length
+        )
+      )
+
+      if (!newActivePlayer) {
+        return throwError('NO_PLAYER_FOUND', 'nextTurn')
+      }
+
+      this.activePlayer = newActivePlayer
+      this.activePlayerData = { ...this.activePlayerData, id: newActivePlayer.id }
 
       this.resetPlayerActions()
 
       useBoardStore().deselectPawn()
     },
     resetPlayerActions() {
-      Object.keys(this.activePlayer.availableActions).forEach((action) => {
-        this.activePlayer.availableActions[action as PlayerAction].isUsed = false
+      Object.keys(this.activePlayerData.availableActions).forEach((action) => {
+        this.activePlayerData.availableActions[action as PlayerAction].isUsed = false
       })
     },
     setupNewGame() {
       this.winner = null
     },
     spendAction(action: PlayerAction) {
-      this.activePlayer.availableActions[action].isUsed = true
+      this.activePlayerData.availableActions[action].isUsed = true
 
-      const allAvailableActionsAreSpent = Object.values(this.activePlayer.availableActions).every(action => {
-        return action.isUsed || !action.isAllowed()
+      const allAvailableActionsAreSpent = Object.values(this.activePlayerData.availableActions).every(action => {
+        return action.isUsed || !action.isAllowed() || !action.isPossible()
       })
 
       if (allAvailableActionsAreSpent) {
@@ -109,7 +151,7 @@ export const useGameStore = defineStore('gameStore', {
     },
     startGame() {
       this.players.forEach(player => player.assignTileColors())
-      this.currentTurn = 0
+      this.currentTurn.number = 0
 
       this.randomizedTurnOrderOffset = Math.floor(Math.random() * this.players.length)
 

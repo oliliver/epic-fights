@@ -1,27 +1,8 @@
 import constants from "../constants"
-import Tile from "../models/Tile"
-import { PlayerClass } from "../models/Player"
 import { GridPosition } from "../models/types"
 import { useGameStore } from '.'
 
 const { GRID_HEIGHT, GRID_WIDTH } = constants
-
-export function getFighterOnTile(players: PlayerClass[], tile: Tile) {
-  let fighter = undefined
-  let playerIndex = 0
-
-  while (fighter === undefined) {
-    const player = players[playerIndex]
-
-    if (!player) break
-
-    fighter = player?.fighters.find(fighter => fighter.isOnTile(tile) && fighter.isAlive)
-
-    playerIndex++
-  }
-
-  return fighter
-}
 
 export function isWithinGrid(position: GridPosition) {
   const { col, row } = position
@@ -59,4 +40,10 @@ export function getOrthogonallyDiagonalTiles(position: GridPosition) {
     gameStore.static.tiles[getTileIdFromPosition({ row: row + 1, col })],
     gameStore.static.tiles[getTileIdFromPosition({ row: row - 1, col })],
   ].filter(v => !!v)
+}
+
+export function throwError(error: string, origin?: string) {
+  if (origin) console.log(`"${origin}" throws:`)
+
+  throw new Error(error);
 }

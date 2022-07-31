@@ -44,6 +44,7 @@ export type BoardState = {
   selectedPawn: {
     fighter: Fighter,
     tile: Tile
+    player: PlayerClass
   } | null
   reachableTiles: ReachableTile[]
   reachableTilesKeyedById: { [id: string | number]: ReachableTile }
@@ -52,6 +53,7 @@ export type BoardState = {
 type AvailableAction = {
   isUsed: boolean
   isAllowed: () => boolean
+  isPossible: () => boolean
 }
 
 export enum PlayerAction {
@@ -67,8 +69,12 @@ type ActivePlayerState = {
 }
 
 export type GameState = {
-  activePlayer: ActivePlayerState
-  currentTurn: number
+  activePlayer: PlayerClass | null
+  activePlayerData: ActivePlayerState
+  currentTurn: {
+    number: number
+    elapsedSeconds: number
+  }
   players: PlayerClass[]
   randomizedTurnOrderOffset: number
   static: {
