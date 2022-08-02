@@ -73,7 +73,7 @@
           </BaseButton>
         </div>
         <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 px-4">
-          <FighterInfo v-for="i in 4" :fighter="fighterData[i as 1 | 2 | 3 | 4]" :key="i" class="flex-1 w-full" />
+          <FighterInfo v-for="i in 4" :fighter="fighterService.createFighter({ fighterId: i })" :key="i" />
         </div>
         <div class="flex-1"></div>
       </div>
@@ -83,21 +83,20 @@
 </template>
 
 <script setup lang="ts">
-import { fighterData } from './models/Fighter'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useWindowSize } from '@vueuse/core'
-import constants from "./constants";
+import BaseButton from './components/BaseButton.vue';
 import BoardTile from './components/BoardTile.vue'
+import constants from "./constants";
 import FighterInfo from './components/FighterInfo.vue'
 import FighterPawn from './components/FighterPawn.vue'
+import GameMenu from './components/Menues/GameMenu.vue';
 import TileBackgroundOverlayActivePlayer from './components/TileBackgroundOverlayActivePlayer.vue';
 import TileBackgroundOverlayInactivePlayer from './components/TileBackgroundOverlayInactivePlayer.vue';
 import Title from "./components/Title.vue";
-import GameMenu from './components/Menues/GameMenu.vue';
+import fighterService from "./services/fighterService";
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useWindowSize } from '@vueuse/core'
 import { useStore, useGameStore, useBoardStore } from './store'
-import BaseButton from './components/BaseButton.vue';
 import { MenuName } from "./store/types";
-
 
 const boardStore = useBoardStore()
 const gameStore = useGameStore()

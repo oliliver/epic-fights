@@ -98,7 +98,8 @@ export const useBoardStore = defineStore('boardStore', {
 
       if (!defender || !attacker?.player.isActive()) return
 
-      const damage = Math.max(0, attacker.attackPoints - defender.defensePoints)
+      const attackerDamage = attacker.attackPoints + attacker.getDamageModification()
+      const damage = Math.max(0, attackerDamage - defender.defensePoints)
 
       this.applyDamage(defender, damage)
 

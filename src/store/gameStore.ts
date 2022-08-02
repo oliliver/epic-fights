@@ -1,8 +1,9 @@
 import constants, { ColorName } from '../constants'
-import Player from "../models/Player"
+import Fighter from "../models/Fighter";
+import Player, { PlayerType } from "../models/Player"
 import Tile from '../models/Tile'
+import fighterService, { fighterRecipies } from "../services/fighterService";
 import { defineStore } from "pinia"
-import { Fighter1, Fighter2, Fighter3, Fighter4 } from '../models/Fighter'
 import { GameState, PlayerAction } from "./types"
 import { useBoardStore } from ".";
 import { throwError } from './helpers'
@@ -60,6 +61,18 @@ export const useGameStore = defineStore('gameStore', {
     }
   },
   actions: {
+    addPlayer() {
+      const playerSlotIndex = this.static.playerSlots.findIndex((_, i) => !this.players.some(p => p.slotIndex == i))
+
+      if (playerSlotIndex !== -1) {
+        const slot = this.static.playerSlots[playerSlotIndex]
+        this.players.push(new Player({
+          color: slot.defaultColor,
+          tiles: slot.tiles,
+          slotIndex: playerSlotIndex
+        }))
+      }
+    },
     evaluateWinCondition() {
       const playersWithFightersAlive = this.players.filter(p => p.fighters.some(f => f.isAlive))
 
@@ -83,9 +96,12 @@ export const useGameStore = defineStore('gameStore', {
       this.static.playerSlots[2].tiles = this.static.tiles.filter(tile => !tile.isCornerTile && tile.isInFirstCol)
       this.static.playerSlots[3].tiles = this.static.tiles.filter(tile => !tile.isCornerTile && tile.isInLastCol)
 
-      const fighters = [new Fighter1(), new Fighter2(), new Fighter3, new Fighter4()]
-      fighters.forEach(f => this.static.fighterPool.push({ fighter: f, maxCount: 2 }))
-
+        ;[1, 2, 3, 4].forEach(
+          fighterId => this.static.fighterPool.push({
+            fighter: fighterService.createFighter({ fighterId }),
+            maxCount: 2
+          })
+        )
 
       if (this.players.length == 0) {
         const [player1, player2] = [0, 1].map(
@@ -96,7 +112,7 @@ export const useGameStore = defineStore('gameStore', {
         )
 
           ;[player1, player2].forEach(player => {
-            player.addFighter(new Fighter4(), player.tiles[0])
+            player.addFighter(new Fighter(fighterRecipies[0]), player.tiles[0])
             player.assignTileColors()
             this.players.push(player)
             this.startGame()
@@ -130,6 +146,13 @@ export const useGameStore = defineStore('gameStore', {
 
       useBoardStore().deselectPawn()
     },
+    removePlayer(player: PlayerType) {
+      const index = this.players.findIndex(p => p.id == player.id)
+
+      if (index !== -1) {
+        this.players.splice(index, 1)
+      }
+    },
     resetPlayerActions() {
       Object.keys(this.activePlayerData.availableActions).forEach((action) => {
         this.activePlayerData.availableActions[action as PlayerAction].isUsed = false
@@ -137,6 +160,12 @@ export const useGameStore = defineStore('gameStore', {
     },
     setupNewGame() {
       this.winner = null
+
+      while (this.players.length < 2) {
+        this.addPlayer()
+      }
+
+      this.players.forEach(p => p.fighters.forEach(f => f.returnToStartingTile()))
     },
     spendAction(action: PlayerAction) {
       this.activePlayerData.availableActions[action].isUsed = true

@@ -1,5 +1,6 @@
 import constants, { ColorName, ColorIntensity } from '../constants'
-import Fighter, { Fighter1, Fighter2, Fighter3, Fighter4 } from './Fighter'
+import fighterService from "../services/fighterService";
+import Fighter from './Fighter'
 import Tile from './Tile'
 import { nanoid } from 'nanoid'
 import { Public } from './types'
@@ -51,32 +52,26 @@ export default class Player {
   }
 
   public addFighter(fighterModel: Fighter, tile: Tile) {
-    const fighterData = {
-      startingTile: tile,
-      player: this
-    }
-
-    const fighter = (() => {
-      switch (fighterModel.fighterId) {
-        case 1: return new Fighter1(fighterData)
-        case 2: return new Fighter2(fighterData)
-        case 3: return new Fighter3(fighterData)
-        default: return new Fighter4(fighterData)
-      }
-    })()
-
-    this.fighters.push(fighter)
+    this.fighters.push(
+      fighterService.createFighter({
+        fighterId: fighterModel.fighterId,
+        startingTile: tile,
+        player: this
+      })
+    )
   }
 
   public removeFighter(fighter: Fighter) {
     const indexOfFighter = this.fighters.findIndex(f => f.id == fighter.id)
 
     if (indexOfFighter !== -1) {
+      fighter.currentTile.removeFighter(fighter)
+
       this.fighters.splice(indexOfFighter, 1)
     }
   }
 }
 
-export type PlayerClass = Public<Player>
+export type PlayerType = Public<Player>
 
 export const neutralPlayer = new Player({ tiles: [], color: ColorName.gray, slotIndex: Infinity })

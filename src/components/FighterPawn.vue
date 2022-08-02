@@ -6,17 +6,17 @@
       <img src="../assets/icons/sword.svg" style="filter: invert(1);" />
     </div>
     <div
-      class="rounded-full h-3/5 w-3/5 m-auto flex flex-col items-center justify-center shadow-md border-2 sm:border-4 cursor-pointer"
+      class="rounded-full h-3/5 w-3/5 m-auto flex flex-col items-center justify-evenly shadow-md border-2 sm:border-4 cursor-pointer"
       :class="isSelected ? 'bg-gray-100' : 'bg-gray-200'"
       :style="{ borderColor: fighter.player.colorValue(), boxShadow: isSelected ? constants.BOX_SHADOWS[fighter.player.color].highlight : '' }"
       @click="selectPawn">
       <strong class="text-xs text-clamp-xs leading-none sm:leading-snug md:leading-tight">
         {{ fighter.tier }}
       </strong>
-      <strong class="text-red-500 text-clamp-sm leading-none whitespace-nowrap">
-        <span>{{ fighter.healthPoints }}</span>
-        <span v-if="fighter.healthPoints < fighter.healthPointsMax" class="text-clamp-xs"> /
-          {{ fighter.healthPointsMax }}</span>
+      <strong
+        class="min-w-[1.25rem] text-center text-clamp-sm bg-gray-700 px-[3px] py-[2px] leading-none whitespace-nowrap rounded-full"
+        :style="{ color: healthColor }">
+        {{ fighter.healthPoints }}
       </strong>
     </div>
   </div>
@@ -49,4 +49,18 @@ function attack() {
 const isSelected = computed(() => boardStore.selectedPawnId == props.fighter.id)
 
 const tile = computed(() => props.fighter.currentTile)
+
+const healthColor = computed(() => {
+  const { healthPoints, healthPointsMax } = props.fighter
+
+  if (healthPoints == healthPointsMax) return '#0f0'
+
+  const healthPercentage = (healthPoints / healthPointsMax) * 100
+
+  if (healthPoints < healthPointsMax && healthPercentage > 50) return '#ff0'
+
+  if (healthPercentage > 10) return '#fa0'
+
+  return '#f00'
+})
 </script>

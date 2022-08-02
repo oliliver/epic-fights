@@ -1,6 +1,6 @@
 import Fighter from "../models/Fighter"
 import Tile from "../models/Tile"
-import { PlayerClass } from "../models/Player"
+import { PlayerType } from "../models/Player"
 import { ReachableTile } from "../models/types"
 import { ColorName } from "../constants"
 import { RemovableRef } from "@vueuse/core"
@@ -44,7 +44,7 @@ export type BoardState = {
   selectedPawn: {
     fighter: Fighter,
     tile: Tile
-    player: PlayerClass
+    player: PlayerType
   } | null
   reachableTiles: ReachableTile[]
   reachableTilesKeyedById: { [id: string | number]: ReachableTile }
@@ -69,18 +69,18 @@ type ActivePlayerState = {
 }
 
 export type GameState = {
-  activePlayer: PlayerClass | null
+  activePlayer: PlayerType | null
   activePlayerData: ActivePlayerState
   currentTurn: {
     number: number
     elapsedSeconds: number
   }
-  players: PlayerClass[]
+  players: PlayerType[]
   randomizedTurnOrderOffset: number
   static: {
     fighterPool: FighterInPool[]
     tiles: Tile[]
     playerSlots: PlayerSlot[]
   }
-  winner: PlayerClass | null
+  winner: PlayerType | null
 }

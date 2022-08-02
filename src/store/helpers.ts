@@ -42,7 +42,7 @@ export function getOrthogonallyDiagonalTiles(position: GridPosition) {
   ].filter(v => !!v)
 }
 
-export function throwError(error: string, origin?: string) {
+export function throwError(error: string, origin?: string): never {
   if (origin) console.log(`"${origin}" throws:`)
 
   throw new Error(error);

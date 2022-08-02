@@ -1,39 +1,41 @@
 <template>
-  <div class="flex items-center gap-2 p-2 rounded"
-    :style="{ backgroundColor: selectedFighterIsOfThisType ? activePlayerColor : '#ddd' }">
+  <div class="flex gap-2 p-2 rounded" :style="{ backgroundColor: player.colorValue(200) }">
     <p class="h-full text-clamp-md">
       {{ fighter.tier }}.
     </p>
-    <div class="flex flex-wrap gap-4 xl:gap-6 justify-center xl:justify-start xl:pl-6 text-clamp-sm">
-      <div>
-        <p class="flex gap-4 justify-between">
-          <span>HP:</span> <span>{{ constants.DEFAULT_HP }}</span>
-        </p>
-        <p class="flex gap-4 justify-between">
-          <span>Movement:</span> <span>{{ fighter.movementPoints }}</span>
-        </p>
-        <p class="flex gap-4 justify-between">
-          <span>Attack:</span> <span>{{ fighter.attackPoints }}</span>
-        </p>
-        <p class="flex gap-4 justify-between">
-          <span>Defense:</span> <span>{{ fighter.defensePoints }}</span>
-        </p>
-      </div>
+    <div class="flex flex-col gap-4 xl:gap-6 xl:pl-6 text-clamp-sm">
+      <AttributeGrid>
+        <AttributeCell label="Health" :value="fighter.healthPoints ?? constants.DEFAULT_HP"
+          :total="fighter.healthPointsMax" :highlight-color="player.colorValue(600)" />
+        <AttributeCell label="Movement" :value="fighter.movementPoints" :highlight-color="player.colorValue(600)" />
+        <AttributeCell label="Attack" :value="fighter.attackPoints" :bonus-value="bonusDamage"
+          :highlight-color="player.colorValue(600)" />
+        <AttributeCell label="Defense" :value="fighter.defensePoints" :highlight-color="player.colorValue(600)" />
+      </AttributeGrid>
       <div v-if="abilities.length" class="flex flex-col items-start">
-        <p>
-          Abilities:
-        </p>
+        <p>Abilities:</p>
         <div class="flex flex-col gap-6">
-          <div v-for="ability in abilities" :key="ability.id" class="pl-6">
-            <strong>
-              {{ ability.name }}
-            </strong>
-            <p>
-              Uses: {{ ability.uses }}
-            </p>
-            <p>
-              Damage: {{ ability.damage }}
-            </p>
+          <div v-for="ability in abilities" :key="ability.name" class="pl-2 xl:pl-6 flex flex-col items-start">
+            <div class="flex gap-[2px] flex-wrap w-full">
+              <span class="font-bold">{{ ability.name }}</span>
+              <span v-if="ability.passivity == Passivity.PASSIVE">(passive)</span>
+              <span v-if="selectedFighterIsOfThisType && ability.passivity == Passivity.PASSIVE"
+                class="italic rounded bg-white px-1 bg-opacity-90 ml-auto">
+                <span v-if="ability.isAvailable()" class="text-green-600">active</span>
+                <span v-else class="text-pink-600">inactive</span>
+              </span>
+            </div>
+
+            <AttributeGrid>
+              <AttributeCell v-if="ability.usesTotal !== Infinity" label="Uses"
+                :value="selectedFighterIsOfThisType ? ability?.usesLeftTotal : ability.usesTotal"
+                :total="ability.usesTotal" :highlight-color="player.colorValue(600)" />
+              <AttributeCell v-if="ability.damage" label="Damage" :value="ability.damage"
+                :highlight-color="player.colorValue(600)" />
+              <AttributeCell v-if="ability.damageBuff" label="Damage buff" :value="ability.damageBuff"
+                :highlight-color="player.colorValue(600)" />
+            </AttributeGrid>
+            <p class="italic font-thin text-gray-700"> {{ ability.description }}</p>
           </div>
         </div>
       </div>
@@ -45,13 +47,23 @@
 import constants from "../constants";
 import { useBoardStore } from "../store";
 import { computed } from "@vue/reactivity";
-import { FighterData } from '../models/types';
+import { AbilityType, Passivity } from '../models/types';
+import { neutralPlayer, PlayerType } from "../models/Player";
+import AttributeCell from "./AttributeCell.vue";
+import AttributeGrid from "./AttributeGrid.vue";
+import Fighter from "../models/Fighter";
 
-const props = defineProps<{ fighter: FighterData }>()
+const props = defineProps<{ fighter: Fighter }>()
 
-const abilities = Object.values(props.fighter.abilities ?? {})
+const selectedPawnFighter = computed(() => useBoardStore().selectedPawn?.fighter)
 
-const selectedFighterIsOfThisType = computed(() => useBoardStore().selectedPawn?.fighter.fighterId == props.fighter.fighterId)
-const activePlayerColor = computed(() => useBoardStore().selectedPawn?.fighter.player.colorValue(300))
+const selectedFighterIsOfThisType = computed(() => selectedPawnFighter.value?.fighterId == props.fighter.fighterId)
 
+const player = computed(() => selectedFighterIsOfThisType.value ? selectedPawnFighter.value?.player as PlayerType : neutralPlayer)
+
+const fighter = computed(() => selectedFighterIsOfThisType.value ? selectedPawnFighter.value : props.fighter)
+
+const abilities = computed(() => (fighter.value?.abilities ?? []) as AbilityType[])
+
+const bonusDamage = computed(() => fighter.value?.getDamageModification())
 </script>

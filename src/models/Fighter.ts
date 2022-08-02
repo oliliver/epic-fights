@@ -1,62 +1,19 @@
 import Ability from './Ability'
 import constants from '../constants'
 import Tile, { neutralTile } from './Tile'
-import { PlayerClass, neutralPlayer } from './Player'
-import { FighterData } from './types'
+import { PlayerType, neutralPlayer } from './Player'
+import { AbilityType, FighterData, Passivity } from './types'
 import { nanoid } from 'nanoid'
 import { useGameStore } from '../store'
 import { PlayerAction } from '../store/types'
-import { getOrthogonallyDiagonalTiles } from '../store/helpers'
-
-export const fighterData: { [key: number | string]: FighterData } = {
-  1: {
-    tier: 1,
-    fighterId: 1,
-    attackPoints: 3,
-    movementPoints: 1,
-    defensePoints: 3,
-    range: 1,
-  },
-  2: {
-    tier: 2,
-    fighterId: 2,
-    attackPoints: 4,
-    movementPoints: 2,
-    defensePoints: 0,
-    range: 1,
-    abilities: {
-      fireArrow: new Ability({
-        name: 'Fire arrow',
-        uses: 1,
-        damage: 8,
-      })
-    },
-  },
-  3: {
-    tier: 3,
-    fighterId: 3,
-    attackPoints: 4,
-    movementPoints: 3,
-    defensePoints: 1,
-    range: 1,
-  },
-  4: {
-    tier: 4,
-    fighterId: 4,
-    attackPoints: 4,
-    movementPoints: 4,
-    defensePoints: 2,
-    range: 1,
-  }
-}
-
+import { getOrthogonallyDiagonalTiles, throwError } from '../store/helpers'
 export default class Fighter {
   public healthPoints: number
   public isAlive = true
-  public player: PlayerClass
+  public player: PlayerType
   public currentTile: Tile
 
-  readonly abilities: { [name: string]: Ability }
+  readonly abilities: AbilityType[]
   readonly attackPoints: number
   readonly defensePoints: number
   readonly fighterId: number
@@ -69,9 +26,9 @@ export default class Fighter {
 
   constructor(initialData: FighterData & {
     startingTile?: Tile
-    player?: PlayerClass
+    player?: PlayerType
   }) {
-    this.abilities = initialData.abilities ?? {}
+    this.abilities = initialData.abilities?.map(a => new Ability(a, this)) ?? []
     this.attackPoints = initialData.attackPoints
     this.defensePoints = initialData.defensePoints
     this.fighterId = initialData.fighterId
@@ -89,7 +46,9 @@ export default class Fighter {
   }
 
   public moveToTile(targetTile: Tile, options: { isAnAction: boolean } = { isAnAction: true }) {
-    if (options.isAnAction && !this.player.canPerformAction(PlayerAction.movement)) return
+    if (options.isAnAction && !this.player.canPerformAction(PlayerAction.movement)) {
+      throwError('NOT_ENOUGH_ACTION_POINTS', 'Fighter.moveToTile')
+    }
 
     try {
       targetTile.addFighter(this)
@@ -121,60 +80,16 @@ export default class Fighter {
     return getOrthogonallyDiagonalTiles(this.currentTile)
       .some(t => !t.isOccupied() && t.isValidForFighter(this))
   }
-}
 
-export class Fighter1 extends Fighter {
-  constructor(args?: { startingTile?: Tile, player?: PlayerClass }) {
-    const { startingTile, player } = args ?? {}
-
-    super(
-      {
-        ...fighterData[1],
-        startingTile,
-        player,
-      }
-    )
+  public returnToStartingTile() {
+    if (this.currentTile !== this.startingTile) {
+      this.moveToTile(this.startingTile, { isAnAction: false })
+    }
   }
-}
 
-export class Fighter2 extends Fighter {
-  constructor(args?: { startingTile?: Tile, player?: PlayerClass }) {
-    const { startingTile, player } = args ?? {}
+  public getDamageModification() {
+    const activePassives = this.abilities.filter(a => a.passivity == Passivity.PASSIVE && a.isAvailable())
 
-    super(
-      {
-        ...fighterData[2],
-        startingTile,
-        player,
-      }
-    )
-  }
-}
-
-export class Fighter3 extends Fighter {
-  constructor(args?: { startingTile?: Tile, player?: PlayerClass }) {
-    const { startingTile, player } = args ?? {}
-
-    super(
-      {
-        ...fighterData[3],
-        startingTile,
-        player,
-      }
-    )
-  }
-}
-
-export class Fighter4 extends Fighter {
-  constructor(args?: { startingTile?: Tile, player?: PlayerClass }) {
-    const { startingTile, player } = args ?? {}
-
-    super(
-      {
-        ...fighterData[4],
-        startingTile,
-        player,
-      }
-    )
+    return activePassives.reduce((a, b) => a + b.damageBuff, 0)
   }
 }

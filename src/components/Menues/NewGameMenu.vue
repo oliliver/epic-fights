@@ -1,11 +1,11 @@
 <template>
   <BaseMenu heading="New Game" :menu-name="MenuName.NEW_GAME">
     <div class="text-left flex flex-col gap-1">
-      <div v-for="(player, i) in chosenPlayers" class="p-2 border flex flex-col gap-2 border-gray-400 rounded"
+      <div v-for="(player, i) in players" class="p-2 border flex flex-col gap-2 border-gray-400 rounded"
         :style="{ backgroundColor: player.colorValue(200) }">
         <div class="flex justify-between">
           <input v-model="player.name" class="bg-transparent border-b" :style="{ borderColor: player.colorValue() }">
-          <button v-if="i > 1" @click="removePlayer(player)"
+          <button v-if="i > 1" @click="gameStore.removePlayer(player)"
             class="px-1 py-0 leading-none -mx-1 -mt-1 hover:bg-white rounded hover:bg-opacity-50">
             <div>&times;</div>
           </button>
@@ -32,12 +32,12 @@
         </div>
       </div>
 
-      <button v-if="chosenPlayers.length < gameStore.static.playerSlots.length" @click="addPlayer"
+      <button v-if="players.length < gameStore.static.playerSlots.length" @click="gameStore.addPlayer"
         class="self-center mx-auto p-2 hover:bg-gray-100 rounded flex items-center gap-2 text-cyan-600">
         <span class="-translate-y-px">&plus;</span><span> Add Player</span>
       </button>
     </div>
-    <BaseButton :disabled="!allPlayersHaveAtLeastOneFighter" class="font-[bangers] mt-2 inverted"
+    <BaseButton :disabled="!allPlayersHaveFourFighters" class="font-[bangers] mt-2 inverted"
       :color="constants.COLORS.amber[500]" @click="startGame">
       Start!
     </BaseButton>
@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
-import Player, { PlayerClass } from "../../models/Player";
+import Player, { PlayerType } from "../../models/Player";
 import FighterToken from "../FighterToken.vue";
 import Tile from "../../models/Tile";
 import Fighter from "../../models/Fighter";
@@ -56,48 +56,26 @@ import BaseButton from "../BaseButton.vue";
 import constants from '../../constants'
 import BaseMenu from "./BaseMenu.vue";
 import { useWindowSize } from "@vueuse/core";
+import { storeToRefs } from "pinia";
 
 const store = useStore()
 const gameStore = useGameStore()
 
-const chosenPlayers = ref<PlayerClass[]>([])
-
-function addPlayer() {
-  const playerSlotIndex = gameStore.static.playerSlots.findIndex((_, i) => !chosenPlayers.value.some(p => p.slotIndex == i))
-
-  if (playerSlotIndex !== -1) {
-    const slot = gameStore.static.playerSlots[playerSlotIndex]
-    chosenPlayers.value.push(new Player({
-      color: slot.defaultColor,
-      tiles: slot.tiles,
-      slotIndex: playerSlotIndex
-    }))
-  }
-}
-addPlayer()
-addPlayer()
-
-function removePlayer(player: PlayerClass) {
-  const index = chosenPlayers.value.findIndex(p => p.id == player.id)
-
-  if (index !== -1) {
-    chosenPlayers.value.splice(index, 1)
-  }
-}
+const { players } = storeToRefs(gameStore)
 
 function getFighter(tile: Tile) {
   return tile.fightersOnTile.find(f => f.isAlive) as Fighter
 }
 
 const availableFighters = gameStore.static.fighterPool
-const numberOfFightersLeft = (player: PlayerClass, fighterData: FighterInPool) => {
+const numberOfFightersLeft = (player: PlayerType, fighterData: FighterInPool) => {
   const numberOfFightersUsed = player.fighters.filter(f => f.fighterId == fighterData.fighter.fighterId).length
 
   return fighterData.maxCount - numberOfFightersUsed
 }
 
 const selectedTiles = reactive<{ [playerId: string]: number | null }>({})
-function selectTile(player: PlayerClass, targetTile: Tile) {
+function selectTile(player: PlayerType, targetTile: Tile) {
   const currentlySelectedTile = player.tiles.find(t => t.id == selectedTiles[player.id])
   const fighterOnCurrentlySelectedTile = currentlySelectedTile?.fightersOnTile.find(f => f.isAlive) ?? null
   const targetTileIsTheCurrentlySelected = selectedTiles[player.id] === targetTile.id
@@ -139,7 +117,7 @@ function selectTile(player: PlayerClass, targetTile: Tile) {
   }
 }
 
-function selectFighter(player: PlayerClass, fighterInPool: FighterInPool) {
+function selectFighter(player: PlayerType, fighterInPool: FighterInPool) {
   if (numberOfFightersLeft(player, fighterInPool) <= 0) return
 
   const tileHasFighter = (tile: Tile) => tile.fightersOnTile.some(f => f.isAlive)
@@ -153,10 +131,9 @@ function selectFighter(player: PlayerClass, fighterInPool: FighterInPool) {
   selectedTiles[player.id] = null
 }
 
-const allPlayersHaveAtLeastOneFighter = computed(() => !!chosenPlayers.value.every(p => p.fighters.length))
+const allPlayersHaveFourFighters = computed(() => players.value.every(p => p.fighters.length == 4))
 
 function startGame() {
-  gameStore.players = [...chosenPlayers.value]
   gameStore.startGame()
   store.setActiveMenu(MenuName.null)
 }

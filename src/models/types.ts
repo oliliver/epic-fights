@@ -1,10 +1,23 @@
 import Ability from "../models/Ability";
+import Fighter from "./Fighter";
 import Tile from "./Tile";
 
 /** starting on 1 / 1 */
 export type GridPosition = { row: number, col: number }
 
 export type PlayerColor = 'blue' | 'green' | 'red' | 'yellow' | 'gray'
+
+export type AbilityData = {
+  damage?: number,
+  damageBuff?: number,
+  description?: string,
+  passivity: Passivity,
+  rarity: Rarity,
+  name: string,
+  usesTotal?: number,
+  usesPerTurn?: number
+  conditions?: [(fighter: Fighter) => boolean]
+}
 
 export type FighterData = {
   tier: number,
@@ -13,13 +26,23 @@ export type FighterData = {
   movementPoints: number,
   defensePoints: number,
   range: number,
-  abilities?: {
-    [name: string]: Ability
-  }
+  abilities?: AbilityData[]
 }
 
 export type Public<T> = { [P in keyof T]: T[P] }
 
+export type AbilityType = Public<Ability>
+
 export type ReachableTile = (Tile & {
   numberOfStepsAway?: number
 })
+
+export enum Rarity {
+  BASIC = 'BASIC',
+  SPECIAL = 'SPECIAL'
+
+}
+export enum Passivity {
+  ACTIVE = 'ACTIVE',
+  PASSIVE = 'PASSIVE'
+}

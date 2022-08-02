@@ -70,7 +70,8 @@
 
 .menu-body {
   min-width: 8rem;
-  @apply flex flex-col bg-white p-2 rounded text-center shadow-2xl;
+  max-width: 95vw;
+  @apply flex flex-col mx-auto bg-white p-2 rounded text-center shadow-2xl;
 }
 
 .menu-btn {
