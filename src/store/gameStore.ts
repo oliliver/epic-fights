@@ -113,8 +113,9 @@ export const useGameStore = defineStore('gameStore', {
             player.addFighter(fighterService.createFighter({ fighterId: 2 }), player.tiles[0])
             player.assignTileColors()
             this.players.push(player)
-            this.startGame()
           })
+
+        this.startGame()
       }
     },
     nextTurn() {
@@ -168,7 +169,7 @@ export const useGameStore = defineStore('gameStore', {
         this.addPlayer()
       }
 
-      this.players.forEach(p => p.fighters.forEach(f => f.returnToStartingTile()))
+      this.players.forEach(p => p.doNewGameUpkeep())
     },
     spendAction(action: PlayerAction) {
       this.activePlayerData.availableActions[action].isUsed = true

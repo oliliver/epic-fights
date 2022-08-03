@@ -1,9 +1,8 @@
 import fighterService from "../services/fighterService";
 import Fighter from './Fighter'
-import Tile from './Tile'
 import constants, { ColorName, ColorIntensity } from '../constants'
 import { nanoid } from 'nanoid'
-import { Public } from './types'
+import { Public, TTile } from './types'
 import { useGameStore } from '../store'
 import { PlayerAction } from '../store/types'
 
@@ -11,11 +10,11 @@ export default class Player {
   public id: string
   public name: string
   public slotIndex: number
-  public tiles: Tile[]
+  public tiles: TTile[]
   public color: ColorName
   public fighters: Fighter[] = []
 
-  constructor(initialData: { tiles: Tile[], color: ColorName, slotIndex: number }) {
+  constructor(initialData: { tiles: TTile[], color: ColorName, slotIndex: number }) {
     this.id = nanoid()
     this.name = `Player ${initialData.slotIndex + 1}`
     this.color = initialData.color
@@ -48,6 +47,14 @@ export default class Player {
   }
 
   /**
+   * doNewGameUpkeep
+   */
+  public doNewGameUpkeep() {
+    this.tiles.forEach(t => t.resetColor())
+    this.fighters.forEach(f => f.doNewGameUpkeep())
+  }
+
+  /**
    * doNewTurnUpkeep
    */
   public doNewTurnUpkeep() {
@@ -58,7 +65,7 @@ export default class Player {
     return useGameStore().activePlayer?.id == this.id
   }
 
-  public addFighter(fighterModel: Fighter, tile: Tile) {
+  public addFighter(fighterModel: Fighter, tile: TTile) {
     this.fighters.push(
       fighterService.createFighter({
         fighterId: fighterModel.fighterId,

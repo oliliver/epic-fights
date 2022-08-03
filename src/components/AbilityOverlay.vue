@@ -47,7 +47,7 @@ const props = defineProps<{
     gridGap: string,
     gridPadding: string,
   },
-  selectedTile?: Tile
+  selectedTile?: TTile
 }>()
 
 const gameStore = useGameStore()

@@ -1,5 +1,4 @@
 import Fighter from '../models/Fighter'
-import Tile from '../models/Tile'
 import { defineStore } from "pinia"
 import { getOrthogonallyDiagonalTiles, isWithinGrid, isWithinRangeOrthogonally, throwError } from './helpers'
 import { ReachableTile } from '../models/types'
@@ -25,7 +24,7 @@ export const useBoardStore = defineStore('boardStore', {
 
         edgeTiles.forEach(edgeTile => {
           const orthogonallyDiagonalTiles = getOrthogonallyDiagonalTiles(edgeTile)
-          const isAlreadyAdded = (tile: Tile) => !!this.reachableTilesKeyedById[tile.id]
+          const isAlreadyAdded = (tile: TTile) => !!this.reachableTilesKeyedById[tile.id]
 
           const accessibleTiles = orthogonallyDiagonalTiles.filter(tile =>
             isWithinRangeOrthogonally(tile, edgeTile, 1) &&
@@ -52,8 +51,8 @@ export const useBoardStore = defineStore('boardStore', {
     calculateTilesWithinDistance(fighter: Fighter) {
       const origin = fighter.currentTile
 
-      const isValidForThisFighter = (tile: Tile) => (!tile.isEdgeTile || (fighter.startingTile.id !== this.selectedPawn?.tile.id && fighter.startingTile.id == tile.id))
-      const isWithinDistance = (tile: Tile) => Math.abs(tile.row - origin.row) + Math.abs(tile.col - origin.col) <= fighter.movementPoints
+      const isValidForThisFighter = (tile: TTile) => (!tile.isEdgeTile || (fighter.startingTile.id !== this.selectedPawn?.tile.id && fighter.startingTile.id == tile.id))
+      const isWithinDistance = (tile: TTile) => Math.abs(tile.row - origin.row) + Math.abs(tile.col - origin.col) <= fighter.movementPoints
 
       this.reachableTiles = useGameStore().static.tiles.filter(tile => {
         return isWithinDistance(tile) && isValidForThisFighter(tile)
@@ -96,7 +95,7 @@ export const useBoardStore = defineStore('boardStore', {
 
       this.deselectPawn()
     },
-    moveSelectedPawn(targetTile: Tile) {
+    moveSelectedPawn(targetTile: TTile) {
       const fighter = this.selectedPawn?.fighter
 
       if (!fighter) return

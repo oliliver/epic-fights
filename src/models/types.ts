@@ -41,7 +41,9 @@ export type Public<T> = { [P in keyof T]: T[P] }
 
 export type TAbility = Public<Ability>
 
-export type ReachableTile = (Tile & {
+export type TTile = Public<Tile>
+
+export type ReachableTile = (TTile & {
   numberOfStepsAway?: number
 })
 

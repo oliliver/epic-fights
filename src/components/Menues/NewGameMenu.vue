@@ -53,25 +53,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
-import Player, { TPlayer } from "../../models/Player";
-import FighterToken from "../FighterToken.vue";
-import Tile from "../../models/Tile";
+import BaseButton from "../BaseButton.vue";
+import BaseMenu from "./BaseMenu.vue";
+import constants from '../../constants'
 import Fighter from "../../models/Fighter";
+import FighterToken from "../FighterToken.vue";
+import { computed, reactive } from "vue";
+import { TPlayer } from "../../models/Player";
 import { FighterInPool, MenuName } from "../../store/types";
 import { useStore, useGameStore } from '../../store'
-import BaseButton from "../BaseButton.vue";
-import constants from '../../constants'
-import BaseMenu from "./BaseMenu.vue";
 import { useWindowSize } from "@vueuse/core";
 import { storeToRefs } from "pinia";
+import { TTile } from "../../models/types";
 
 const store = useStore()
 const gameStore = useGameStore()
 
 const { players } = storeToRefs(gameStore)
 
-function getFighter(tile: Tile) {
+function getFighter(tile: TTile) {
   return tile.fightersOnTile.find(f => f.isAlive) as Fighter
 }
 
@@ -83,7 +83,7 @@ const numberOfFightersLeft = (player: TPlayer, fighterData: FighterInPool) => {
 }
 
 const selectedTiles = reactive<{ [playerId: string]: number | null }>({})
-function selectTile(player: TPlayer, targetTile: Tile) {
+function selectTile(player: TPlayer, targetTile: TTile) {
   const currentlySelectedTile = player.tiles.find(t => t.id == selectedTiles[player.id])
   const fighterOnCurrentlySelectedTile = currentlySelectedTile?.fightersOnTile.find(f => f.isAlive) ?? null
   const targetTileIsTheCurrentlySelected = selectedTiles[player.id] === targetTile.id
@@ -128,7 +128,7 @@ function selectTile(player: TPlayer, targetTile: Tile) {
 function selectFighter(player: TPlayer, fighterInPool: FighterInPool) {
   if (numberOfFightersLeft(player, fighterInPool) <= 0) return
 
-  const tileHasFighter = (tile: Tile) => tile.fightersOnTile.some(f => f.isAlive)
+  const tileHasFighter = (tile: TTile) => tile.fightersOnTile.some(f => f.isAlive)
 
   const targetTile = player.tiles.find(tile => selectedTiles[player.id] ? tile.id == selectedTiles[player.id] : !tileHasFighter(tile))
 

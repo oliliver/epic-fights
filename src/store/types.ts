@@ -1,7 +1,6 @@
 import Fighter from "../models/Fighter"
-import Tile from "../models/Tile"
 import { TPlayer } from "../models/Player"
-import { ReachableTile } from "../models/types"
+import { ReachableTile, TTile } from "../models/types"
 import { ColorName } from "../constants"
 import { RemovableRef } from "@vueuse/core"
 import { Menu } from "../models/Menu"
@@ -15,7 +14,7 @@ export enum MenuName {
 
 type PlayerSlot = {
   defaultColor: ColorName
-  tiles: Tile[]
+  tiles: TTile[]
 }
 
 export type FighterInPool = {
@@ -37,7 +36,7 @@ export type MainState = {
 export type BoardState = {
   selectedPawn: {
     fighter: Fighter,
-    tile: Tile
+    tile: TTile
     player: TPlayer
   } | null
   reachableTiles: ReachableTile[]
@@ -74,7 +73,7 @@ export type GameState = {
   randomizedTurnOrderOffset: number
   static: {
     fighterPool: FighterInPool[]
-    tiles: Tile[]
+    tiles: TTile[]
     playerSlots: PlayerSlot[]
   }
   winner: TPlayer | null

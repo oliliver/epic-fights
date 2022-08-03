@@ -17,6 +17,8 @@ export default class Tile {
   readonly isInLastRow: boolean
   readonly row: number
 
+  private initialColor: string
+
   public getFighter: () => Fighter | null
   public isWithinAttackRange: () => boolean
   public isOccupied: () => boolean
@@ -24,17 +26,17 @@ export default class Tile {
   public isEnemy: () => boolean
   public isValidForFighter: (fighter: Fighter) => boolean
   public removeFighter: (fighter: Fighter) => void
+  public resetColor: () => void
   public addFighter: (fighter: Fighter) => void
 
   public fightersOnTile: Fighter[] = []
-  public classes: string[] = []
   public styles: { [T in keyof CSSProperties]?: CSSProperties[T] } = {}
 
   constructor(id: number, row: number, col: number) {
     this.getFighter = function () {
       const boardStore = useBoardStore()
 
-      return boardStore.fightersKeyedByTileId[this.id] ?? null
+      return boardStore.fightersKeyedByTileId[String(this.id)] ?? null
     }
 
     this.isOccupied = function () {
@@ -72,12 +74,14 @@ export default class Tile {
     this.row = row
 
     if (this.isCornerTile) {
-      this.classes = ['bg-transparent']
+      this.initialColor = 'transparent'
     } else if (this.isEdgeTile) {
-      this.classes = ['bg-gray-700']
+      this.initialColor = constants.COLORS.gray[700]
     } else {
-      this.classes = ['bg-gray-200']
+      this.initialColor = constants.COLORS.gray[200]
     }
+
+    this.styles.backgroundColor = this.initialColor
 
     this.isValidForFighter = function (fighter: Fighter) {
       const { startingTile, currentTile } = fighter
@@ -99,6 +103,10 @@ export default class Tile {
       if (indexOfFighter !== -1) {
         this.fightersOnTile.splice(indexOfFighter, 1)
       }
+    }
+
+    this.resetColor = function () {
+      this.styles["background-color"] = this.initialColor
     }
   }
 }

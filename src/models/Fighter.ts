@@ -1,8 +1,8 @@
 import Ability from './Ability'
 import constants from '../constants'
-import Tile, { neutralTile } from './Tile'
+import { neutralTile } from './Tile'
 import { TPlayer, neutralPlayer } from './Player'
-import { TAbility, FighterData, Passivity, AbilityType, Rarity } from './types'
+import { TAbility, FighterData, Passivity, AbilityType, Rarity, TTile } from './types'
 import { nanoid } from 'nanoid'
 import { useGameStore } from '../store'
 import { PlayerAction } from '../store/types'
@@ -12,7 +12,7 @@ export default class Fighter {
   public healthPoints: number
   public isAlive = true
   public player: TPlayer
-  public currentTile: Tile
+  public currentTile: TTile
   public currentAbility: TAbility
   public defaultAbility: TAbility
 
@@ -23,11 +23,11 @@ export default class Fighter {
   readonly healthPointsMax: number
   readonly id: string
   readonly movementPoints: number
-  readonly startingTile: Tile
+  readonly startingTile: TTile
   readonly tier: number
 
   constructor(initialData: FighterData & {
-    startingTile?: Tile
+    startingTile?: TTile
     player?: TPlayer
   }) {
     this.abilities = initialData.abilities?.map((a, i) => new Ability({ ...a, indexOnFighter: i }, this)) ?? []
@@ -66,7 +66,7 @@ export default class Fighter {
     this.healthPoints += Math.min(restoration, missingHP)
   }
 
-  public moveToTile(targetTile: Tile, options: { isAnAction: boolean } = { isAnAction: true }) {
+  public moveToTile(targetTile: TTile, options: { isAnAction: boolean } = { isAnAction: true }) {
     if (options.isAnAction && !this.player.canPerformAction(PlayerAction.movement)) {
       throwError('NOT_ENOUGH_ACTION_POINTS', 'Fighter.moveToTile')
     }
@@ -121,6 +121,15 @@ export default class Fighter {
    */
   public doNewTurnUpkeep() {
     this.abilities.forEach(a => a.doNewTurnUpkeep())
+  }
+
+  /**
+   * doNewGameUpkeep
+   */
+  public doNewGameUpkeep() {
+    this.returnToStartingTile()
+    this.isAlive = true
+    this.healthPoints = this.healthPointsMax
   }
 
   /**

@@ -1,7 +1,6 @@
 import Fighter from "../models/Fighter";
-import Tile from "../models/Tile";
 import { throwError } from "../store/helpers";
-import { AbilityData, AbilityType, FighterData, Passivity, Rarity, Target } from '../models/types'
+import { AbilityData, AbilityType, FighterData, Passivity, Rarity, Target, TTile } from '../models/types'
 import { TPlayer } from "../models/Player";
 
 const basicAbilitiesData: AbilityData[] = [
@@ -96,7 +95,7 @@ export const fighterRecipies: FighterData[] = [
 ]
 
 class FighterService {
-  public createFighter(args: { fighterId: number, startingTile?: Tile, player?: TPlayer }) {
+  public createFighter(args: { fighterId: number, startingTile?: TTile, player?: TPlayer }) {
     const { fighterId, startingTile, player } = args
     const recipe = fighterRecipies.find(r => r.fighterId == fighterId)
 
