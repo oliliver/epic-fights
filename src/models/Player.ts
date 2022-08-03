@@ -1,7 +1,7 @@
-import constants, { ColorName, ColorIntensity } from '../constants'
 import fighterService from "../services/fighterService";
 import Fighter from './Fighter'
 import Tile from './Tile'
+import constants, { ColorName, ColorIntensity } from '../constants'
 import { nanoid } from 'nanoid'
 import { Public } from './types'
 import { useGameStore } from '../store'
@@ -47,6 +47,13 @@ export default class Player {
     return this.isActive() && !action.isUsed && action.isAllowed()
   }
 
+  /**
+   * doNewTurnUpkeep
+   */
+  public doNewTurnUpkeep() {
+    this.fighters.forEach(f => f.doNewTurnUpkeep())
+  }
+
   public isActive() {
     return useGameStore().activePlayer?.id == this.id
   }
@@ -72,6 +79,6 @@ export default class Player {
   }
 }
 
-export type PlayerType = Public<Player>
+export type TPlayer = Public<Player>
 
 export const neutralPlayer = new Player({ tiles: [], color: ColorName.gray, slotIndex: Infinity })

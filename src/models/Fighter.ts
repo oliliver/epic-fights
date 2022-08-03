@@ -1,35 +1,48 @@
 import Ability from './Ability'
 import constants from '../constants'
 import Tile, { neutralTile } from './Tile'
-import { PlayerType, neutralPlayer } from './Player'
-import { AbilityType, FighterData, Passivity } from './types'
+import { TPlayer, neutralPlayer } from './Player'
+import { TAbility, FighterData, Passivity, AbilityType, Rarity } from './types'
 import { nanoid } from 'nanoid'
 import { useGameStore } from '../store'
 import { PlayerAction } from '../store/types'
 import { getOrthogonallyDiagonalTiles, throwError } from '../store/helpers'
+
 export default class Fighter {
   public healthPoints: number
   public isAlive = true
-  public player: PlayerType
+  public player: TPlayer
   public currentTile: Tile
+  public currentAbility: TAbility
+  public defaultAbility: TAbility
 
-  readonly abilities: AbilityType[]
+  readonly abilities: TAbility[]
   readonly attackPoints: number
   readonly defensePoints: number
   readonly fighterId: number
   readonly healthPointsMax: number
   readonly id: string
   readonly movementPoints: number
-  readonly range: number
   readonly startingTile: Tile
   readonly tier: number
 
   constructor(initialData: FighterData & {
     startingTile?: Tile
-    player?: PlayerType
+    player?: TPlayer
   }) {
-    this.abilities = initialData.abilities?.map(a => new Ability(a, this)) ?? []
+    this.abilities = initialData.abilities?.map((a, i) => new Ability({ ...a, indexOnFighter: i }, this)) ?? []
+
+    const basicAttack = this.abilities.find(a => a.rarity == Rarity.BASIC && a.abilityTypes.includes(AbilityType.ATTACK_REPLACEMENT))
+
+    if (!basicAttack) {
+      throwError('NO_BASIC_ATTACK', 'Fighter.constructor')
+    }
+
+    this.defaultAbility = basicAttack
+
     this.attackPoints = initialData.attackPoints
+    this.currentAbility = this.defaultAbility
+    this.currentTile = neutralTile
     this.defensePoints = initialData.defensePoints
     this.fighterId = initialData.fighterId
     this.healthPoints = constants.DEFAULT_HP
@@ -37,12 +50,20 @@ export default class Fighter {
     this.id = nanoid()
     this.movementPoints = initialData.movementPoints
     this.player = initialData.player ?? neutralPlayer
-    this.currentTile = neutralTile
     this.startingTile = initialData.startingTile ?? neutralTile
-    this.range = initialData.range
     this.tier = initialData.tier
 
     this.moveToTile(this.startingTile, { isAnAction: false })
+  }
+
+  /**
+   * applyHealing
+   */
+  public applyHealing(ability: TAbility) {
+    const restoration = Math.max(0, ability.restoration)
+    const missingHP = this.healthPointsMax - this.healthPoints
+
+    this.healthPoints += Math.min(restoration, missingHP)
   }
 
   public moveToTile(targetTile: Tile, options: { isAnAction: boolean } = { isAnAction: true }) {
@@ -65,20 +86,96 @@ export default class Fighter {
     }
   }
 
+  public changeAttack(newAttack: TAbility) {
+    ;[newAttack.indexOnFighter, this.currentAbility.indexOnFighter] = [this.currentAbility.indexOnFighter, newAttack.indexOnFighter]
+
+    this.currentAbility = newAttack
+  }
+
+  public getFullDamageValue(ability: TAbility) {
+    return Math.max(0, this.attackPoints + ability.damageBuff + this.getPassiveDamageModification())
+  }
+
   /**
    * hasEnemyWithinAttackRange
    * @returns boolean
    */
   public hasEnemyWithinAttackRange() {
     return getOrthogonallyDiagonalTiles(this.currentTile)
-      .some(t => t.fightersOnTile
+      .some(t => !t.isEdgeTile && t.fightersOnTile
         .some(f => f.player.id !== this.player.id && f.isAlive)
       )
+  }
+
+  public hasAttackReplacements() {
+    return this.abilities.some(a => a.abilityTypes.includes(AbilityType.ATTACK_REPLACEMENT))
   }
 
   public canMove() {
     return getOrthogonallyDiagonalTiles(this.currentTile)
       .some(t => !t.isOccupied() && t.isValidForFighter(this))
+  }
+
+  /**
+   * doNewTurnUpkeep
+   */
+  public doNewTurnUpkeep() {
+    this.abilities.forEach(a => a.doNewTurnUpkeep())
+  }
+
+  /**
+   * performAbility
+   */
+  public performAbility(ability: TAbility, params?: { target: Fighter }) {
+    if (!this.player.isActive()) {
+      throwError('PLAYER_NOT_ACTIVE', 'Fighter.performAbility')
+    }
+
+    if (ability.passivity !== Passivity.ACTIVE) {
+      throwError('ABILITY_IS_NOT_AN_ACTIVE_ABILITY', 'Fighter.performAbility')
+    }
+
+    if (ability.abilityTypes.includes(AbilityType.HEAL)) {
+      this.applyHealing(ability)
+    }
+
+    if (ability.abilityTypes.includes(AbilityType.ATTACK_REPLACEMENT)) {
+      const { target } = params ?? {}
+
+      if (!target) {
+        throwError('NO_TARGET', 'Fighter.performAbility')
+      }
+
+      const attackDamage = this.getFullDamageValue(ability)
+      const damage = Math.max(0, attackDamage - target.defensePoints)
+
+      target.applyDamage(damage)
+
+      if (!target.isAlive && ability.range == 1) {
+        this.moveToTile(target.currentTile)
+      }
+    }
+
+    ability.expendUse()
+
+    if (ability.abilityTypes.includes(AbilityType.ATTACK_REPLACEMENT) && !ability.usesLeftTotal) {
+      this.changeAttack(this.defaultAbility)
+    }
+  }
+
+  /**
+   * applyDamage
+   */
+  public applyDamage(damage: number) {
+    const gameStore = useGameStore()
+
+    this.healthPoints -= damage
+
+    if (this.healthPoints <= 0) {
+      this.isAlive = false
+    }
+
+    gameStore.evaluateWinCondition()
   }
 
   public returnToStartingTile() {
@@ -87,7 +184,7 @@ export default class Fighter {
     }
   }
 
-  public getDamageModification() {
+  public getPassiveDamageModification() {
     const activePassives = this.abilities.filter(a => a.passivity == Passivity.PASSIVE && a.isAvailable())
 
     return activePassives.reduce((a, b) => a + b.damageBuff, 0)

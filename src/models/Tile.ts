@@ -1,7 +1,7 @@
-import { CSSProperties } from "vue";
-import { useBoardStore } from "../store";
 import constants from "../constants"
 import Fighter from "./Fighter";
+import { CSSProperties } from "vue";
+import { useBoardStore } from "../store";
 import { throwError } from "../store/helpers";
 
 const { GRID_HEIGHT, GRID_WIDTH } = constants
@@ -58,7 +58,7 @@ export default class Tile {
     this.isWithinAttackRange = function () {
       const boardStore = useBoardStore()
 
-      return (boardStore.reachableTilesKeyedById[this.id]?.numberOfStepsAway ?? Infinity) <= (boardStore.selectedPawn?.fighter.range ?? 0)
+      return (boardStore.reachableTilesKeyedById[this.id]?.numberOfStepsAway ?? Infinity) <= (boardStore.selectedPawn?.fighter.currentAbility.range ?? 0)
     }
 
     this.col = col
@@ -80,9 +80,9 @@ export default class Tile {
     }
 
     this.isValidForFighter = function (fighter: Fighter) {
-      const boardStore = useBoardStore()
+      const { startingTile, currentTile } = fighter
 
-      return !this.isEdgeTile || (fighter.startingTile.id !== boardStore.selectedPawn?.tile.id && fighter.startingTile.id == this.id)
+      return !this.isEdgeTile || (startingTile.id == this.id && startingTile.id !== currentTile.id)
     }
 
     this.addFighter = function (fighter: Fighter) {

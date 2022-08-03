@@ -8,7 +8,7 @@
         <AttributeCell label="Health" :value="fighter.healthPoints ?? constants.DEFAULT_HP"
           :total="fighter.healthPointsMax" :highlight-color="player.colorValue(600)" />
         <AttributeCell label="Movement" :value="fighter.movementPoints" :highlight-color="player.colorValue(600)" />
-        <AttributeCell label="Attack" :value="fighter.attackPoints" :bonus-value="bonusDamage"
+        <AttributeCell label="Attack" :value="fighter.attackPoints" :bonus-values="[abilityDamage, passiveBonusDamage]"
           :highlight-color="player.colorValue(600)" />
         <AttributeCell label="Defense" :value="fighter.defensePoints" :highlight-color="player.colorValue(600)" />
       </AttributeGrid>
@@ -49,8 +49,8 @@
 import constants from "../constants";
 import { useBoardStore } from "../store";
 import { computed } from "@vue/reactivity";
-import { AbilityType, Passivity } from '../models/types';
-import { neutralPlayer, PlayerType } from "../models/Player";
+import { TAbility, Passivity } from '../models/types';
+import { neutralPlayer, TPlayer } from "../models/Player";
 import AttributeCell from "./AttributeCell.vue";
 import AttributeGrid from "./AttributeGrid.vue";
 import Fighter from "../models/Fighter";
@@ -61,11 +61,12 @@ const selectedPawnFighter = computed(() => useBoardStore().selectedPawn?.fighter
 
 const selectedFighterIsOfThisType = computed(() => selectedPawnFighter.value?.fighterId == props.fighter.fighterId)
 
-const player = computed(() => selectedFighterIsOfThisType.value ? selectedPawnFighter.value?.player as PlayerType : neutralPlayer)
+const player = computed(() => selectedFighterIsOfThisType.value ? selectedPawnFighter.value?.player as TPlayer : neutralPlayer)
 
 const fighter = computed(() => selectedFighterIsOfThisType.value ? selectedPawnFighter.value : props.fighter)
 
-const abilities = computed(() => (fighter.value?.abilities ?? []) as AbilityType[])
+const abilities = computed(() => (fighter.value?.abilities ?? []) as TAbility[])
 
-const bonusDamage = computed(() => fighter.value?.getDamageModification())
+const abilityDamage = computed(() => fighter.value?.currentAbility.damageBuff || 0)
+const passiveBonusDamage = computed(() => fighter.value?.getPassiveDamageModification() || 0)
 </script>

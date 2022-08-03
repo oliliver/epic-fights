@@ -1,12 +1,12 @@
-import constants, { ColorName } from '../constants'
-import Fighter from "../models/Fighter";
-import Player, { PlayerType } from "../models/Player"
+import fighterService from "../services/fighterService";
 import Tile from '../models/Tile'
-import fighterService, { fighterRecipies } from "../services/fighterService";
+import constants, { ColorName } from '../constants'
+import Player, { TPlayer } from "../models/Player"
 import { defineStore } from "pinia"
 import { GameState, PlayerAction } from "./types"
 import { useBoardStore } from ".";
 import { throwError } from './helpers'
+import { AbilityType, Passivity, TAbility } from '../models/types';
 
 export const useGameStore = defineStore('gameStore', {
   state(): GameState {
@@ -18,13 +18,13 @@ export const useGameStore = defineStore('gameStore', {
         availableActions: {
           movement: {
             isUsed: false,
-            isAllowed: () => !useGameStore().activePlayerData.availableActions.attack.isUsed,
+            isAllowed: () => !useGameStore().activePlayerData.availableActions.ability.isUsed,
             isPossible: () => !!useBoardStore().selectedPawn?.fighter.canMove(),
           },
-          attack: {
+          ability: {
             isUsed: false,
             isAllowed: () => true,
-            isPossible: () => !!useGameStore().activePlayer?.fighters.some(f => f.isAlive && f.hasEnemyWithinAttackRange())
+            isPossible: () => !!useBoardStore().selectedPawn?.fighter.abilities.some(a => a.passivity == Passivity.ACTIVE && a.isPossible())
           }
         }
       },
@@ -110,7 +110,7 @@ export const useGameStore = defineStore('gameStore', {
         )
 
           ;[player1, player2].forEach(player => {
-            player.addFighter(new Fighter(fighterRecipies[1]), player.tiles[0])
+            player.addFighter(fighterService.createFighter({ fighterId: 2 }), player.tiles[0])
             player.assignTileColors()
             this.players.push(player)
             this.startGame()
@@ -134,10 +134,11 @@ export const useGameStore = defineStore('gameStore', {
       this.activePlayerData = { ...this.activePlayerData, id: newActivePlayer.id }
 
       this.resetPlayerActions()
+      this.activePlayer.doNewTurnUpkeep()
 
       useBoardStore().deselectPawn()
     },
-    removePlayer(player: PlayerType) {
+    removePlayer(player: TPlayer) {
       const index = this.players.findIndex(p => p.id == player.id)
 
       if (index !== -1) {
@@ -148,6 +149,17 @@ export const useGameStore = defineStore('gameStore', {
       Object.keys(this.activePlayerData.availableActions).forEach((action) => {
         this.activePlayerData.availableActions[action as PlayerAction].isUsed = false
       })
+    },
+    selectFighterAbility(ability: TAbility) {
+      const selectedFighter = useBoardStore().selectedPawn?.fighter
+
+      if (!selectedFighter) return
+
+      if (ability.abilityTypes.includes(AbilityType.ATTACK_REPLACEMENT)) {
+        selectedFighter.changeAttack(ability)
+      } else if (ability.passivity == Passivity.ACTIVE) {
+        selectedFighter.performAbility(ability)
+      }
     },
     setupNewGame() {
       this.winner = null
@@ -161,7 +173,7 @@ export const useGameStore = defineStore('gameStore', {
     spendAction(action: PlayerAction) {
       this.activePlayerData.availableActions[action].isUsed = true
 
-      const allAvailableActionsAreSpent = Object.values(this.activePlayerData.availableActions).every(action => {
+      const allAvailableActionsAreSpent = [...Object.values(this.activePlayerData.availableActions)].every(action => {
         return action.isUsed || !action.isAllowed() || !action.isPossible()
       })
 

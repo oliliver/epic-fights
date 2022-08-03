@@ -89,21 +89,21 @@
 </template>
 
 <script setup lang="ts">
+import AbilityOverlay from './components/AbilityOverlay.vue';
 import BaseButton from './components/BaseButton.vue';
 import BoardTile from './components/BoardTile.vue'
 import constants from "./constants";
 import FighterInfo from './components/FighterInfo.vue'
 import FighterPawn from './components/FighterPawn.vue'
+import fighterService from "./services/fighterService";
 import GameMenu from './components/Menues/GameMenu.vue';
 import TileBackgroundOverlayActivePlayer from './components/TileBackgroundOverlayActivePlayer.vue';
 import TileBackgroundOverlayInactivePlayer from './components/TileBackgroundOverlayInactivePlayer.vue';
 import Title from "./components/Title.vue";
-import fighterService from "./services/fighterService";
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useWindowSize } from '@vueuse/core'
 import { useStore, useGameStore, useBoardStore } from './store'
 import { MenuName } from "./store/types";
-import AbilityOverlay from './components/AbilityOverlay.vue';
 
 const boardStore = useBoardStore()
 const gameStore = useGameStore()

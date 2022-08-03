@@ -1,14 +1,17 @@
 <template>
   <span class="attribute label">{{ label }}:</span>
-  <span class="attribute number"
-    :class="[bonusValue && bonusValue > 0 && 'buffed', bonusValue && bonusValue < 0 && 'debuffed']">
+  <span class="attribute number" :class="[totalBonus > 0 && 'buffed', totalBonus < 0 && 'debuffed']">
     <span :style="{ color: valueIsModified ? highlightColor : undefined }">{{ computedValue }}</span>
     <span v-if="total && computedValue !== total"> / {{ total }}</span>
   </span>
   <span class="attribute number">
-    <span v-if="bonusValue" class="attribute number text-clamp-xs">
-      ({{ value }} <span :class="bonusValue > 0 ? 'buffed' : 'debuffed'">
-        <span :style="{ color: highlightColor }">{{ bonusValue > 0 ? ' +' : ' -' }} {{ bonusValue }}</span></span>)
+    <span v-if="nonZeroBonusValues?.length" class="attribute number text-clamp-xs">
+      ({{ value }}
+      <span v-for="bonusValue in nonZeroBonusValues" :class="bonusValue > 0 ? 'buffed' : 'debuffed'"
+        :style="{ color: highlightColor }">
+        {{ bonusValue > 0 ? ' +' : ' -' }} {{ bonusValue }}
+      </span>
+      )
     </span>
   </span>
 </template>
@@ -19,15 +22,17 @@ import { computed } from '@vue/reactivity';
 const props = defineProps<{
   label: string,
   value: number,
-  bonusValue?: number
+  bonusValues?: number[]
   total?: number
   highlightColor?: string
 }>()
 
-const computedValue = computed(() => (props.value ?? 0) + (props.bonusValue ?? 0))
+const totalBonus = computed(() => props.bonusValues?.reduce((a, b) => a + b, 0) ?? 0)
+const computedValue = computed(() => (props.value ?? 0) + totalBonus.value)
+const nonZeroBonusValues = computed(() => props.bonusValues?.filter(v => v !== 0))
 
 const valueIsModified = computed(() => {
-  if (props.value !== computedValue.value) return true
+  if (nonZeroBonusValues.value?.length) return true
   if (props.total && computedValue.value !== props.total) return true
   return false
 })

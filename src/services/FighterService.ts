@@ -1,27 +1,49 @@
 import Fighter from "../models/Fighter";
-import { throwError } from "../store/helpers";
-import { AbilityData, FighterData, Passivity, Rarity } from '../models/types'
 import Tile from "../models/Tile";
-import { PlayerType } from "../models/Player";
+import { throwError } from "../store/helpers";
+import { AbilityData, AbilityType, FighterData, Passivity, Rarity, Target } from '../models/types'
+import { TPlayer } from "../models/Player";
 
 const basicAbilitiesData: AbilityData[] = [
   {
+    abilityTypes: [AbilityType.ATTACK_REPLACEMENT],
+    description: 'Basic attack',
+    name: 'Attack',
+    icon: 'sword',
+    passivity: Passivity.ACTIVE,
+    range: 1,
+    rarity: Rarity.BASIC,
+    damageBuff: 0,
+    usesPerTurn: 1,
+    usesTotal: Infinity,
+    target: Target.ENEMY,
+  },
+  {
+    abilityTypes: [AbilityType.HEAL],
     name: 'Heal',
     icon: 'heart-plus',
     description: 'Heal a small amount of health',
     passivity: Passivity.ACTIVE,
-    rarity: Rarity.BASIC,
+    range: 1,
+    rarity: Rarity.COMMON,
     restoration: 2,
     usesTotal: Infinity,
     usesPerTurn: 1,
+    conditions: [
+      (fighter: Fighter) => fighter.healthPoints < fighter.healthPointsMax,
+    ],
+    target: Target.SELF,
   },
   {
+    abilityTypes: [AbilityType.BUFF],
     name: 'Adrenaline Rush',
     damageBuff: 2,
     description: 'Damage boost that activates when a player has only one fighter alive',
     passivity: Passivity.PASSIVE,
-    rarity: Rarity.BASIC,
+    range: 1,
+    rarity: Rarity.COMMON,
     usesTotal: Infinity,
+    target: Target.SELF,
     conditions: [
       (fighter: Fighter) => fighter.isAlive && fighter.player.fighters.filter(f => f.isAlive).length == 1
     ]
@@ -35,7 +57,6 @@ export const fighterRecipies: FighterData[] = [
     attackPoints: 3,
     movementPoints: 1,
     defensePoints: 3,
-    range: 1,
   },
   {
     tier: 2,
@@ -43,14 +64,18 @@ export const fighterRecipies: FighterData[] = [
     attackPoints: 4,
     movementPoints: 2,
     defensePoints: 0,
-    range: 1,
     abilities: [
       {
-        passivity: Passivity.ACTIVE,
-        rarity: Rarity.SPECIAL,
+        abilityTypes: [AbilityType.ATTACK_REPLACEMENT],
+        damageBuff: 4,
+        description: 'Extra powerful attack',
+        icon: 'flaming-arrow',
         name: 'Fire Arrow',
+        passivity: Passivity.ACTIVE,
+        range: 1,
+        rarity: Rarity.SPECIAL,
         usesTotal: 1,
-        damage: 8,
+        target: Target.ENEMY,
       }
     ]
   },
@@ -60,7 +85,6 @@ export const fighterRecipies: FighterData[] = [
     attackPoints: 4,
     movementPoints: 3,
     defensePoints: 1,
-    range: 1,
   },
   {
     tier: 4,
@@ -68,12 +92,11 @@ export const fighterRecipies: FighterData[] = [
     attackPoints: 4,
     movementPoints: 4,
     defensePoints: 2,
-    range: 1,
   }
 ]
 
 class FighterService {
-  public createFighter(args: { fighterId: number, startingTile?: Tile, player?: PlayerType }) {
+  public createFighter(args: { fighterId: number, startingTile?: Tile, player?: TPlayer }) {
     const { fighterId, startingTile, player } = args
     const recipe = fighterRecipies.find(r => r.fighterId == fighterId)
 
@@ -84,8 +107,8 @@ class FighterService {
     const fighterData = {
       ...recipe,
       abilities: [
-        ...(recipe.abilities ?? []),
         ...basicAbilitiesData,
+        ...(recipe.abilities ?? []),
       ]
     }
 

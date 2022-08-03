@@ -1,9 +1,9 @@
-import { defineStore } from "pinia"
-import { getOrthogonallyDiagonalTiles, isWithinGrid, isWithinRangeOrthogonally } from './helpers'
-import { ReachableTile } from '../models/types'
 import Fighter from '../models/Fighter'
 import Tile from '../models/Tile'
-import { BoardState, PlayerAction } from "./types"
+import { defineStore } from "pinia"
+import { getOrthogonallyDiagonalTiles, isWithinGrid, isWithinRangeOrthogonally, throwError } from './helpers'
+import { ReachableTile } from '../models/types'
+import { BoardState } from "./types"
 import { useGameStore } from "./gameStore";
 
 export const useBoardStore = defineStore('boardStore', {
@@ -85,35 +85,16 @@ export const useBoardStore = defineStore('boardStore', {
       this.selectedPawn = null
       this.resetReachableTiles()
     },
-    applyDamage(defender: Fighter, damage: number) {
-      const gameStore = useGameStore()
-
-      defender.healthPoints -= damage
-
-      if (defender.healthPoints <= 0) {
-        defender.isAlive = false
-      }
-
-      gameStore.evaluateWinCondition()
-    },
     attackPawn(defender: Fighter) {
-      const gameStore = useGameStore()
       const attacker = this.selectedPawn?.fighter
 
-      if (!defender || !attacker?.player.isActive()) return
-
-      const attackerDamage = attacker.attackPoints + attacker.getDamageModification()
-      const damage = Math.max(0, attackerDamage - defender.defensePoints)
-
-      this.applyDamage(defender, damage)
-
-      if (!defender.isAlive && attacker.range == 1) {
-        const defenderTile = gameStore.static.tiles[defender.currentTile.id]
-        attacker.moveToTile(defenderTile)
+      if (!attacker) {
+        throwError('NO_ATTACKER', 'boardStore.attackPawn')
       }
 
+      attacker.performAbility(attacker.currentAbility, { target: defender })
+
       this.deselectPawn()
-      gameStore.spendAction(PlayerAction.attack)
     },
     moveSelectedPawn(targetTile: Tile) {
       const fighter = this.selectedPawn?.fighter
