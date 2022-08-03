@@ -6,6 +6,16 @@ import { PlayerType } from "../models/Player";
 
 const basicAbilitiesData: AbilityData[] = [
   {
+    name: 'Heal',
+    icon: 'heart-plus',
+    description: 'Heal a small amount of health',
+    passivity: Passivity.ACTIVE,
+    rarity: Rarity.BASIC,
+    restoration: 2,
+    usesTotal: Infinity,
+    usesPerTurn: 1,
+  },
+  {
     name: 'Adrenaline Rush',
     damageBuff: 2,
     description: 'Damage boost that activates when a player has only one fighter alive',

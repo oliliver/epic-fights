@@ -8,14 +8,13 @@ import { GameState, PlayerAction } from "./types"
 import { useBoardStore } from ".";
 import { throwError } from './helpers'
 
-let currentTurnTimer: number
-
 export const useGameStore = defineStore('gameStore', {
   state(): GameState {
     return {
       activePlayer: null,
       activePlayerData: {
         id: null,
+        selectedAction: null,
         availableActions: {
           movement: {
             isUsed: false,
@@ -31,7 +30,6 @@ export const useGameStore = defineStore('gameStore', {
       },
       currentTurn: {
         number: 0,
-        elapsedSeconds: 0
       },
       players: [],
       randomizedTurnOrderOffset: 0,
@@ -112,7 +110,7 @@ export const useGameStore = defineStore('gameStore', {
         )
 
           ;[player1, player2].forEach(player => {
-            player.addFighter(new Fighter(fighterRecipies[0]), player.tiles[0])
+            player.addFighter(new Fighter(fighterRecipies[1]), player.tiles[0])
             player.assignTileColors()
             this.players.push(player)
             this.startGame()
@@ -121,13 +119,6 @@ export const useGameStore = defineStore('gameStore', {
     },
     nextTurn() {
       this.currentTurn.number++
-      this.currentTurn.elapsedSeconds = 0
-
-      if (currentTurnTimer) {
-        clearInterval(currentTurnTimer)
-      }
-
-      currentTurnTimer = setInterval(() => this.currentTurn.elapsedSeconds++, 1000)
 
       const newActivePlayer = this.players.find(
         p => (p.slotIndex + 1) == (

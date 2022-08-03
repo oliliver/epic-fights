@@ -8,7 +8,7 @@
 @layer components {
   .btn {
     background-color: currentColor;
-    @apply border rounded shadow transition-all;
+    @apply border rounded shadow transition-all select-none;
   }
   .btn:disabled {
     filter: saturate(.4) brightness(1.2);

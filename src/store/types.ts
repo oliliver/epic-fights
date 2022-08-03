@@ -48,6 +48,7 @@ export type BoardState = {
   } | null
   reachableTiles: ReachableTile[]
   reachableTilesKeyedById: { [id: string | number]: ReachableTile }
+  showAbilityOverlay: boolean
 }
 
 type AvailableAction = {
@@ -63,6 +64,7 @@ export enum PlayerAction {
 
 type ActivePlayerState = {
   id: string | null
+  selectedAction: any | null
   availableActions: {
     [action in PlayerAction]: AvailableAction
   }
@@ -73,7 +75,6 @@ export type GameState = {
   activePlayerData: ActivePlayerState
   currentTurn: {
     number: number
-    elapsedSeconds: number
   }
   players: PlayerType[]
   randomizedTurnOrderOffset: number

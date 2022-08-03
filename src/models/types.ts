@@ -11,8 +11,10 @@ export type AbilityData = {
   damage?: number,
   damageBuff?: number,
   description?: string,
+  icon?: string
   passivity: Passivity,
   rarity: Rarity,
+  restoration?: number,
   name: string,
   usesTotal?: number,
   usesPerTurn?: number

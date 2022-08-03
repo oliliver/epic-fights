@@ -42,9 +42,11 @@
             gridTemplateRows: gridSize,
           }">
           <div v-if="store.initialized" id="board-grid"
-            class="w-full flex-none col-start-2 grid gap-1 bg-gray-900 p-4 rounded-md mx-auto" :style="{
+            class="w-full relative flex-none col-start-2 grid bg-gray-900 rounded-md mx-auto" :style="{
               gridTemplateColumns: `repeat(${constants.GRID_WIDTH}, 1fr)`,
               gridTemplateRows: `repeat(${constants.GRID_HEIGHT}, 1fr)`,
+              gridGap: gridGap,
+              padding: gridPadding,
               height: gridSize,
               width: gridSize
             }">
@@ -59,6 +61,10 @@
               :style="{ gridColumnStart: fighter.currentTile.col, gridRowStart: fighter.currentTile.row }">
               <FighterPawn :fighter="fighter" />
             </div>
+
+            <AbilityOverlay :gridSizes="{
+              gridSize, gridGap, gridPadding
+            }" :selectedTile="selectedTile" />
           </div>
         </div>
         <div class="flex py-4">
@@ -93,10 +99,11 @@ import TileBackgroundOverlayActivePlayer from './components/TileBackgroundOverla
 import TileBackgroundOverlayInactivePlayer from './components/TileBackgroundOverlayInactivePlayer.vue';
 import Title from "./components/Title.vue";
 import fighterService from "./services/fighterService";
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useWindowSize } from '@vueuse/core'
 import { useStore, useGameStore, useBoardStore } from './store'
 import { MenuName } from "./store/types";
+import AbilityOverlay from './components/AbilityOverlay.vue';
 
 const boardStore = useBoardStore()
 const gameStore = useGameStore()
@@ -109,10 +116,25 @@ const showGameMenuOnEsc = (event: KeyboardEvent) => {
   }
 }
 
+const selectedTile = computed(() => boardStore.selectedPawn?.fighter?.currentTile)
+
 const animationDuration = 3000
 const isMounted = ref(false)
 const isAnimated = ref(false)
-const nextTurnButtonDisabled = computed(() => gameStore.currentTurn.elapsedSeconds < 1)
+const nextTurnButtonDisabled = ref(false)
+
+let nextTurnButtonDisabledTimer: number
+watch(() => gameStore.currentTurn.number, () => {
+  nextTurnButtonDisabled.value = true
+
+  if (nextTurnButtonDisabledTimer) {
+    clearTimeout(nextTurnButtonDisabledTimer)
+  }
+
+  nextTurnButtonDisabledTimer = setTimeout(() => {
+    nextTurnButtonDisabled.value = false
+  }, 1000);
+})
 
 onMounted(() => {
   setTimeout(() => {
@@ -135,6 +157,8 @@ onUnmounted(() => {
 const windowSize = useWindowSize()
 
 const gridSize = computed(() => `${Math.ceil(Math.min(windowSize.height.value * 0.7, windowSize.width.value * 0.95))}px`)
+const gridGap = '0.25rem'
+const gridPadding = '1rem'
 
 const activePlayer = computed(() => gameStore.activePlayer)
 const selectedPlayer = computed(() => gameStore.players.find(p => p.id == boardStore.selectedPlayerId))

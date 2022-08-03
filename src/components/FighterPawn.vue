@@ -1,5 +1,10 @@
 <template>
   <div class="h-full w-full relative flex select-none">
+    <div v-if="isSelected && isActive" @click="boardStore.showAbilityOverlay = !boardStore.showAbilityOverlay"
+      class="cursor-pointer absolute top-1 right-1 h-6 w-6 rounded-full grid place-items-center shadow"
+      :style="{ backgroundColor: fighter.player.colorValue() }">
+      <p class="leading-none font-bold text-white -translate-y-[6px]">...</p>
+    </div>
     <div v-if="tile.isWithinAttackRange() && tile.isEnemy()"
       class="absolute p-3 opacity-0 hover:opacity-90 bg-opacity-50 transition-opacity cursor-pointer bg-black"
       @click="attack">
@@ -47,6 +52,7 @@ function attack() {
 }
 
 const isSelected = computed(() => boardStore.selectedPawnId == props.fighter.id)
+const isActive = computed(() => boardStore.selectedPawn?.player.isActive())
 
 const tile = computed(() => props.fighter.currentTile)
 

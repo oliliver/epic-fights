@@ -8,7 +8,9 @@ export default class Ability {
   public damageBuff: number
   public description: string
   public id: string
+  public icon: string
   public rarity: Rarity
+  public restoration: number
   public passivity: Passivity
   public name: string
   public usesTotal: number
@@ -26,8 +28,10 @@ export default class Ability {
     this.damageBuff = initialData.damageBuff ?? 0
     this.description = initialData.description ?? ''
     this.id = nanoid()
+    this.icon = initialData.icon ?? 'sword'
     this.passivity = initialData.passivity
     this.rarity = initialData.rarity
+    this.restoration = initialData.restoration
     this.name = initialData.name
     this.usesTotal = initialData.usesTotal ?? Infinity
     this.usesPerTurn = initialData.usesPerTurn ?? this.usesTotal

@@ -1,5 +1,5 @@
 <template>
-  <span class="attribute string">{{ label }}:</span>
+  <span class="attribute label">{{ label }}:</span>
   <span class="attribute number"
     :class="[bonusValue && bonusValue > 0 && 'buffed', bonusValue && bonusValue < 0 && 'debuffed']">
     <span :style="{ color: valueIsModified ? highlightColor : undefined }">{{ computedValue }}</span>
@@ -34,12 +34,16 @@ const valueIsModified = computed(() => {
 </script>
 
 <style>
-.attribute.string {
+.attribute {
   @apply leading-tight;
+}
+
+.attribute.label {
+  @apply whitespace-nowrap;
 }
 
 .attribute.number {
   padding: 0 3px;
-  @apply leading-tight font-medium text-right;
+  @apply font-medium text-right;
 }
 </style>

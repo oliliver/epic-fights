@@ -30,6 +30,8 @@
               <AttributeCell v-if="ability.usesTotal !== Infinity" label="Uses"
                 :value="selectedFighterIsOfThisType ? ability?.usesLeftTotal : ability.usesTotal"
                 :total="ability.usesTotal" :highlight-color="player.colorValue(600)" />
+              <AttributeCell v-if="ability.restoration" label="Restoration" :value="ability.restoration"
+                :highlight-color="player.colorValue(600)" />
               <AttributeCell v-if="ability.damage" label="Damage" :value="ability.damage"
                 :highlight-color="player.colorValue(600)" />
               <AttributeCell v-if="ability.damageBuff" label="Damage buff" :value="ability.damageBuff"

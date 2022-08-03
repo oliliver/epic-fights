@@ -12,6 +12,7 @@ export const useBoardStore = defineStore('boardStore', {
       reachableTiles: [],
       reachableTilesKeyedById: {},
       selectedPawn: null,
+      showAbilityOverlay: false,
     }
   },
   actions: {
@@ -63,13 +64,15 @@ export const useBoardStore = defineStore('boardStore', {
       this.reachableTilesKeyedById = {}
     },
     selectPawn(fighter: Fighter) {
+      if (this.selectedPawn !== null) {
+        this.deselectPawn()
+      }
+
       this.selectedPawn = {
         fighter,
         tile: fighter.currentTile,
         player: fighter.player,
       }
-
-      this.resetReachableTiles()
 
       if (fighter.player.isActive()) {
         this.calculateReachableTiles(fighter)
@@ -78,6 +81,7 @@ export const useBoardStore = defineStore('boardStore', {
       }
     },
     deselectPawn() {
+      this.showAbilityOverlay = false
       this.selectedPawn = null
       this.resetReachableTiles()
     },
