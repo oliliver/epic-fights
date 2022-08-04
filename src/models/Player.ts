@@ -1,4 +1,4 @@
-import fighterService from "../services/fighterService";
+import fighterService from "../services/FighterService";
 import Fighter from './Fighter'
 import constants, { ColorName, ColorIntensity } from '../constants'
 import { nanoid } from 'nanoid'

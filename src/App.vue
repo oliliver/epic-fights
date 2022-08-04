@@ -95,7 +95,7 @@ import BoardTile from './components/BoardTile.vue'
 import constants from "./constants";
 import FighterInfo from './components/FighterInfo.vue'
 import FighterPawn from './components/FighterPawn.vue'
-import fighterService from "./services/fighterService";
+import fighterService from "./services/FighterService";
 import GameMenu from './components/Menues/GameMenu.vue';
 import TileBackgroundOverlayActivePlayer from './components/TileBackgroundOverlayActivePlayer.vue';
 import TileBackgroundOverlayInactivePlayer from './components/TileBackgroundOverlayInactivePlayer.vue';

@@ -34,9 +34,8 @@
 <script setup lang="ts">
 import AbilityOverlayItem from './AbilityOverlayItem.vue';
 import constants from '../constants';
-import Tile from '../models/Tile';
 import { computed } from '@vue/reactivity';
-import { AbilityType, Passivity } from '../models/types';
+import { AbilityType, Passivity, TTile } from '../models/types';
 import { useBoardStore, useGameStore } from '../store';
 
 const boardStore = useBoardStore()

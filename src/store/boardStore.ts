@@ -1,7 +1,7 @@
 import Fighter from '../models/Fighter'
 import { defineStore } from "pinia"
 import { getOrthogonallyDiagonalTiles, isWithinGrid, isWithinRangeOrthogonally, throwError } from './helpers'
-import { ReachableTile } from '../models/types'
+import { ReachableTile, TTile } from '../models/types'
 import { BoardState } from "./types"
 import { useGameStore } from "./gameStore";
 

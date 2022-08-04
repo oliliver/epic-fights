@@ -1,4 +1,4 @@
-import fighterService from "../services/fighterService";
+import fighterService from "../services/FighterService";
 import Tile from '../models/Tile'
 import constants, { ColorName } from '../constants'
 import Player, { TPlayer } from "../models/Player"
