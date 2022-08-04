@@ -1,7 +1,7 @@
 import Fighter from "./Fighter"
 import { nanoid } from "nanoid"
 import { useGameStore } from "../store"
-import { throwError } from "../store/helpers"
+import { throwError, validateAbilityUsesLeft } from "../store/helpers"
 import { PlayerAction } from "../store/types"
 import { AbilityData, Target, AbilityType, Rarity, Passivity } from "./types"
 
@@ -87,12 +87,7 @@ export default class Ability {
   public expendUse() {
     const gameStore = useGameStore()
 
-    if (this.usesLeftThisTurn < 1) {
-      throwError('NO_MORE_USES_THIS_TURN', 'Ability.spendAction')
-    }
-    if (this.usesLeftTotal < 1) {
-      throwError('NO_MORE_USES', 'Ability.spendAction')
-    }
+    validateAbilityUsesLeft(this)
 
     this.usesLeftTotal--
     this.usesLeftThisTurn--

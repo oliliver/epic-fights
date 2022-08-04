@@ -70,6 +70,7 @@ export type GameState = {
     number: number
   }
   players: TPlayer[]
+  inactivePlayerCompensationOffset: number
   randomizedTurnOrderOffset: number
   static: {
     fighterPool: FighterInPool[]

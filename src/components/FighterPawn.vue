@@ -2,7 +2,8 @@
   <div class="h-full w-full relative flex select-none">
     <FighterToken @click="selectPawn" :fighter="fighter" :is-selected="isSelected" />
 
-    <div v-if="isSelected && isActive && boardStore.selectedPawn?.fighter && boardStore.showAbilityOverlay"
+    <div
+      v-if="isSelected && isActive && boardStore.selectedPawn?.fighter?.hasAttackReplacements() && boardStore.showAbilityOverlay"
       class="absolute inset-0 p-3 z-20">
       <AbilityOverlayItem :ability="boardStore.selectedPawn?.fighter.currentAbility" />
     </div>

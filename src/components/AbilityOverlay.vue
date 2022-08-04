@@ -1,15 +1,14 @@
 <template>
   <transition-group name="fade" mode="out-in">
     <div v-if="selectedTile && boardStore.showAbilityOverlay" v-for="(ability, i) in abilities"
-      :class="ability.abilityTypes.some(t => t === AbilityType.ATTACK_REPLACEMENT) && 'peer'" class="absolute z-50"
-      :style="{
+      :class="isAttackReplacement(ability) && ability.isAvailable() && 'peer'" class="absolute z-50" :style="{
         top: `calc(${getVector(i, abilities.length).y}px - 4px + ${gridSizes.gridPadding} + (${selectedTile.row - 1} * ${tileSize}) - (${selectedTile.row - 1} * (1px + ${gridSizes.gridGap})) + ${tileSize} / 2)`,
         left: `calc(${getVector(i, abilities.length).x}px - 4px  + ${gridSizes.gridPadding} + (${selectedTile.col - 1} * ${tileSize}) - (${selectedTile.col - 1} * (1px + ${gridSizes.gridGap})) + ${tileSize} / 2)`,
         transform: 'translate(calc(-1 * 50%), calc(-1 * 50%))',
         height: `calc(${tileSize} / 2)`,
         width: `calc(${tileSize} / 2)`,
       }" :key="ability.id">
-      <AbilityOverlayItem :ability="ability" @click="gameStore.selectFighterAbility(ability)" />
+      <AbilityOverlayItem :ability="ability" @click="selectAbility(ability)" />
     </div>
 
     <!-- NOTE: this element has a peer-* class an must therefore be placed *after* its peer -->
@@ -35,7 +34,7 @@
 import AbilityOverlayItem from './AbilityOverlayItem.vue';
 import constants from '../constants';
 import { computed } from '@vue/reactivity';
-import { AbilityType, Passivity, TTile } from '../models/types';
+import { AbilityType, Passivity, TAbility, TTile } from '../models/types';
 import { useBoardStore, useGameStore } from '../store';
 
 const boardStore = useBoardStore()
@@ -83,5 +82,15 @@ const getVector = (index: number, total: number) => {
   }
 
   return vector
+}
+
+const isAttackReplacement = (ability: TAbility) => {
+  return ability.abilityTypes.some(t => t === AbilityType.ATTACK_REPLACEMENT)
+}
+
+function selectAbility(ability: TAbility) {
+  if (!ability.isAvailable()) return
+
+  gameStore.selectFighterAbility(ability)
 }
 </script>

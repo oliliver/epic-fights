@@ -32,6 +32,7 @@ export const useGameStore = defineStore('gameStore', {
         number: 0,
       },
       players: [],
+      inactivePlayerCompensationOffset: 0,
       randomizedTurnOrderOffset: 0,
       static: {
         fighterPool: [],
@@ -104,11 +105,22 @@ export const useGameStore = defineStore('gameStore', {
     nextTurn() {
       this.currentTurn.number++
 
-      const newActivePlayer = this.players.find(
-        p => (p.slotIndex + 1) == (
-          ((this.currentTurn.number + this.randomizedTurnOrderOffset) % this.players.length) || this.players.length
-        )
-      )
+      let newActivePlayer: TPlayer | undefined
+
+      const loopLimit = this.inactivePlayerCompensationOffset + this.players.length
+
+      while (!newActivePlayer && this.inactivePlayerCompensationOffset < loopLimit) {
+        const indexOfNewActivePlayer = (
+          (this.currentTurn.number + this.inactivePlayerCompensationOffset + this.randomizedTurnOrderOffset) % this.players.length
+        ) || this.players.length
+
+        newActivePlayer = this.players.find(p => p.hasFightersAlive() && (p.slotIndex + 1) == indexOfNewActivePlayer)
+
+        if (!newActivePlayer) {
+          this.inactivePlayerCompensationOffset++
+        }
+      }
+
 
       if (!newActivePlayer) {
         return throwError('NO_PLAYER_FOUND', 'nextTurn')

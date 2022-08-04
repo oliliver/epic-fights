@@ -84,6 +84,10 @@ export default class Player {
       this.fighters.splice(indexOfFighter, 1)
     }
   }
+
+  public hasFightersAlive() {
+    return this.fighters.some(f => f.isAlive)
+  }
 }
 
 export type TPlayer = Public<Player>

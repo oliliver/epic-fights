@@ -1,5 +1,5 @@
 import constants from "../constants"
-import { GridPosition } from "../models/types"
+import { GridPosition, TAbility } from "../models/types"
 import { useGameStore } from '.'
 
 const { GRID_HEIGHT, GRID_WIDTH } = constants
@@ -46,4 +46,13 @@ export function throwError(error: string, origin?: string): never {
   if (origin) console.log(`"${origin}" throws:`)
 
   throw new Error(error);
+}
+
+export function validateAbilityUsesLeft(ability: TAbility) {
+  if (ability.usesLeftThisTurn < 1) {
+    throwError('NO_MORE_USES_THIS_TURN', 'validateAbilityUsesLeft')
+  }
+  if (ability.usesLeftTotal < 1) {
+    throwError('NO_MORE_USES', 'validateAbilityUsesLeft')
+  }
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="shadow-inner rounded-full h-full w-full relative group select-none" :class="
-    !isSelectedAttack && ability && ability.isAvailable() && 'border peer border-gray-200 hover:opacity-80 hover:border-emerald-500 cursor-pointer',
+    !isSelectedAttack && ability && ability.isAvailable() && 'border border-gray-200 hover:opacity-80 hover:border-emerald-500 cursor-pointer',
     ability && !ability.isAvailable() && 'opacity-50'
   ">
     <div class="h-full w-full rounded-full" :class="isSelectedAttack ? 'p-[2px]' : 'p-[2px] sm:p-1'"

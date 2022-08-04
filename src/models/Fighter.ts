@@ -6,7 +6,7 @@ import { TAbility, FighterData, Passivity, AbilityType, Rarity, TTile } from './
 import { nanoid } from 'nanoid'
 import { useGameStore } from '../store'
 import { PlayerAction } from '../store/types'
-import { getOrthogonallyDiagonalTiles, throwError } from '../store/helpers'
+import { getOrthogonallyDiagonalTiles, throwError, validateAbilityUsesLeft } from '../store/helpers'
 
 export default class Fighter {
   public healthPoints: number
@@ -108,7 +108,7 @@ export default class Fighter {
   }
 
   public hasAttackReplacements() {
-    return this.abilities.some(a => a.abilityTypes.includes(AbilityType.ATTACK_REPLACEMENT))
+    return this.abilities.filter(a => a.abilityTypes.includes(AbilityType.ATTACK_REPLACEMENT)).length > 1
   }
 
   public canMove() {
@@ -136,39 +136,46 @@ export default class Fighter {
    * performAbility
    */
   public performAbility(ability: TAbility, params?: { target: Fighter }) {
-    if (!this.player.isActive()) {
-      throwError('PLAYER_NOT_ACTIVE', 'Fighter.performAbility')
-    }
+    try {
 
-    if (ability.passivity !== Passivity.ACTIVE) {
-      throwError('ABILITY_IS_NOT_AN_ACTIVE_ABILITY', 'Fighter.performAbility')
-    }
+      validateAbilityUsesLeft(ability)
 
-    if (ability.abilityTypes.includes(AbilityType.HEAL)) {
-      this.applyHealing(ability)
-    }
-
-    if (ability.abilityTypes.includes(AbilityType.ATTACK_REPLACEMENT)) {
-      const { target } = params ?? {}
-
-      if (!target) {
-        throwError('NO_TARGET', 'Fighter.performAbility')
+      if (!this.player.isActive()) {
+        throwError('PLAYER_NOT_ACTIVE', 'Fighter.performAbility')
       }
 
-      const attackDamage = this.getFullDamageValue(ability)
-      const damage = Math.max(0, attackDamage - target.defensePoints)
-
-      target.applyDamage(damage)
-
-      if (!target.isAlive && ability.range == 1) {
-        this.moveToTile(target.currentTile)
+      if (ability.passivity !== Passivity.ACTIVE) {
+        throwError('ABILITY_IS_NOT_AN_ACTIVE_ABILITY', 'Fighter.performAbility')
       }
-    }
 
-    ability.expendUse()
+      if (ability.abilityTypes.includes(AbilityType.HEAL)) {
+        this.applyHealing(ability)
+      }
 
-    if (ability.abilityTypes.includes(AbilityType.ATTACK_REPLACEMENT) && !ability.usesLeftTotal) {
-      this.changeAttack(this.defaultAbility)
+      if (ability.abilityTypes.includes(AbilityType.ATTACK_REPLACEMENT)) {
+        const { target } = params ?? {}
+
+        if (!target) {
+          throwError('NO_TARGET', 'Fighter.performAbility')
+        }
+
+        const attackDamage = this.getFullDamageValue(ability)
+        const damage = Math.max(0, attackDamage - target.defensePoints)
+
+        target.applyDamage(damage)
+
+        if (!target.isAlive && ability.range == 1) {
+          this.moveToTile(target.currentTile)
+        }
+      }
+
+      ability.expendUse()
+
+      if (ability.abilityTypes.includes(AbilityType.ATTACK_REPLACEMENT) && !ability.usesLeftTotal) {
+        this.changeAttack(this.defaultAbility)
+      }
+    } catch (error) {
+      console.error(error)
     }
   }
 

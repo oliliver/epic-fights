@@ -1,6 +1,6 @@
 <template>
   <div class="flex gap-2 p-2 rounded relative" :style="{ backgroundColor: player.colorValue(200) }">
-    <img :src="imagePath" class="absolute h-full left-1/2 -translate-x-1/2 opacity-20" />
+    <img :src="imagePath" class="absolute w-full top-1/2 -translate-y-1/2 opacity-20" />
     <div class="flex flex-col gap-4 xl:gap-6 xl:pl-6 text-clamp-sm">
       <AttributeGrid>
         <AttributeCell label="Health" :value="fighter.healthPoints ?? constants.DEFAULT_HP"
