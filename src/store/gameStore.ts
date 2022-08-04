@@ -100,23 +100,6 @@ export const useGameStore = defineStore('gameStore', {
             maxCount: 2
           })
         )
-
-      if (this.players.length == 0) {
-        const [player1, player2] = [0, 1].map(
-          slotIndex => new Player({
-            tiles: this.static.playerSlots[slotIndex].tiles,
-            color: this.static.playerSlots[slotIndex].defaultColor, slotIndex
-          })
-        )
-
-          ;[player1, player2].forEach(player => {
-            player.addFighter(fighterService.createFighter({ fighterId: 2 }), player.tiles[0])
-            player.assignTileColors()
-            this.players.push(player)
-          })
-
-        this.startGame()
-      }
     },
     nextTurn() {
       this.currentTurn.number++

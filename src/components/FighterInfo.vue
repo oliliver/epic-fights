@@ -1,8 +1,6 @@
 <template>
-  <div class="flex gap-2 p-2 rounded" :style="{ backgroundColor: player.colorValue(200) }">
-    <p class="h-full text-clamp-md">
-      {{ fighter.tier }}.
-    </p>
+  <div class="flex gap-2 p-2 rounded relative" :style="{ backgroundColor: player.colorValue(200) }">
+    <img :src="imagePath" class="absolute h-full left-1/2 -translate-x-1/2 opacity-20" />
     <div class="flex flex-col gap-4 xl:gap-6 xl:pl-6 text-clamp-sm">
       <AttributeGrid>
         <AttributeCell label="Health" :value="fighter.healthPoints ?? constants.DEFAULT_HP"
@@ -46,14 +44,15 @@
 </template>
 
 <script setup lang="ts">
+import AttributeCell from "./AttributeCell.vue";
+import AttributeGrid from "./AttributeGrid.vue";
 import constants from "../constants";
+import Fighter from "../models/Fighter";
 import { useBoardStore } from "../store";
 import { computed } from "@vue/reactivity";
 import { TAbility, Passivity } from '../models/types';
 import { neutralPlayer, TPlayer } from "../models/Player";
-import AttributeCell from "./AttributeCell.vue";
-import AttributeGrid from "./AttributeGrid.vue";
-import Fighter from "../models/Fighter";
+import { watch, ref } from "vue";
 
 const props = defineProps<{ fighter: Fighter }>()
 
@@ -69,4 +68,14 @@ const abilities = computed(() => (fighter.value?.abilities ?? []) as TAbility[])
 
 const abilityDamage = computed(() => fighter.value?.currentAbility.damageBuff || 0)
 const passiveBonusDamage = computed(() => fighter.value?.getPassiveDamageModification() || 0)
+
+const imagePath = ref('')
+
+watch(
+  () => props.fighter.fighterId,
+  async () => {
+    imagePath.value = (await import(`../assets/icons/fighter-${props.fighter.fighterId}.png`)).default || ''
+  },
+  { immediate: true }
+)
 </script>
