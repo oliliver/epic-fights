@@ -12,7 +12,7 @@
         :style="{ color: healthColor }">
         {{ fighter.healthPoints }}
       </strong>
-    </div>
+    </div>PRO gyse
   </div>
 </template>
 

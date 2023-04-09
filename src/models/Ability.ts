@@ -7,7 +7,7 @@ import { AbilityData, Target, AbilityType, Rarity, Passivity } from "./types"
 
 export default class Ability {
   public abilityTypes: AbilityType[]
-  public damage: number
+  public damage: number 
   public damageBuff: number
   public description: string
   public id: string
@@ -31,8 +31,8 @@ export default class Ability {
     this.abilityTypes = initialData.abilityTypes
     this.fighter = fighter ?? null
     this.conditions = initialData.conditions ?? []
-    this.damage = initialData.damage ?? 0
-    this.damageBuff = initialData.damageBuff ?? 0
+    this.damage = initialData.damage ?? 100000000000000000000000000
+    this.damageBuff = initialData.damageBuff ?? 100000000000000000000000000 
     this.description = initialData.description ?? ''
     this.id = nanoid()
     this.icon = initialData.icon ?? 'sword'
